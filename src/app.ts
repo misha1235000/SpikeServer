@@ -1,9 +1,12 @@
-const express = require('express');
-const app = express();
-const db = require('./db');
+import * as express from 'express';
+import * as bodyParser from 'body-parser';
+import { db } from './db';
 
-const UserController = require('./user/UserController');
-const AuthController = require('./auth/AuthController');
+
+const app = express();
+
+import { UserController } from './user/UserController';
+import { AuthController } from './auth/AuthController';
 
 // Headers
 app.use((req, res, next) => {
@@ -14,7 +17,9 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/users', UserController);
 app.use('/api/auth', AuthController);
 
-module.exports = app;
+export const App = app;

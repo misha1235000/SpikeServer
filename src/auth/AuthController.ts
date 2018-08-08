@@ -1,24 +1,26 @@
-// AuthController.js
-const express = require('express');
+// AuthController
+
+import { NextFunction } from "../../node_modules/@types/connect";
+import { Error } from "mongoose";
+import { UserModel } from "../user/user.model";
+import * as express from 'express';
+import { User } from "../user/user.interface";
+
 const router = express.Router();
-const bodyParser = require('body-parser');
-router.use(bodyParser.urlencoded({extended: false}));
-router.use(bodyParser.json());
-const User = require('../user/User');
 const jwt = require('jsonwebtoken');
 const VerifyToken = require('./VerifyToken');
 const bcrypt = require('bcryptjs');
 const config = require('../config');
 
-router.post('/register', (req, res) => {
+router.post('/register', (req: express.Request, res: express.Response) => {
     let hashedPassword = bcrypt.hashSync(req.body.password, 8);
 
-    User.create({
+    UserModel.create({
         name: req.body.name,
         email: req.body.email,
         password: hashedPassword
     },
-    (err, user) => {
+    (err: Error, user: User) => {
         if (err) {
             return res.status(500).send("There was a problem registering the user.");
         }
@@ -28,43 +30,44 @@ router.post('/register', (req, res) => {
           expiresIn: 60 // 24 Hours
         })
 
-        res.status(200).send({ auth: true, token: token });
+        return res.status(200).send({ auth: true, token: token });
     });
 });
 
-router.get('/', VerifyToken, (req, res, next) => {
+router.get('/', VerifyToken, (req: express.Request, res: express.Response, next: NextFunction) => {
     let token = req.headers['authorization'];
     if (!token) {
         return res.status(401).send({ auth: false, message: 'No token provided.' }).redirect('/');
     }
 
-    jwt.verify(token, config.secret, (err, decoded) => {
+    jwt.verify(token, config.secret, (err: Error, decoded: any) => {
         if (err) {
             return res.status(500).send({ auth: false, message: 'Failed to authenticate token.' }).redirect('/');
         }
         
-        User.findById(decoded.id, 
-        { password: 0, _id: 0, name: 0}, // projection
-        (err, user) => {
+        UserModel.findById(decoded.id, 
+        { password: 0, _id: 0, name: 0},
+        (err: Error, user: User) => {
             if (err) {
                 return res.status(500).send("There was a problem finding the user.");
             }
+
             if (!user) {
                 return res.status(404).send("No user found.");
             }
 
-            next(user);
+            return next(user);
         });
     });
 });
 
 // Middleware function
-router.use((user, req, res, next) => {
+router.use((user: User, req: express.Request, res: express.Response, next: NextFunction) => {
     res.status(200).send(user);
 });
 
-router.post('/login', (req, res) => {
-    User.findOne({ email: req.body.email }, (err, user) => {
+router.post('/login', (req: express.Request, res: express.Response) => {
+    UserModel.findOne({ email: req.body.email }, (err: Error, user: User) => {
       if (err) {
           return res.status(500).send('Error on the server.');
       }
@@ -82,12 +85,12 @@ router.post('/login', (req, res) => {
         expiresIn: 86400 // 24 hours
       });
 
-      res.status(200).send({ auth: true, token: token });
+      return res.status(200).send({ auth: true, token: token });
     });
 });
 
-router.get('/logout', (req, res) => {
+router.get('/logout', (req: express.Request, res: express.Response) => {
     res.status(200).send({ auth: false, token: null });
 });
 
-module.exports = router;
+export const AuthController = router;
