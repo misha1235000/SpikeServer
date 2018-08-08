@@ -1,4 +1,4 @@
 // config.js
-module.exports = {
+export const config = {
     'secret': 'secretcode'
 };

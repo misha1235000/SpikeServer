@@ -5,12 +5,12 @@ import { Error } from "mongoose";
 import { UserModel } from "../user/user.model";
 import * as express from 'express';
 import { User } from "../user/user.interface";
+import * as jwt from 'jsonwebtoken';
+import { VerifyToken } from './VerifyToken';
+import * as bcrypt from 'bcrypt';
+import { config } from '../config';
 
 const router = express.Router();
-const jwt = require('jsonwebtoken');
-const VerifyToken = require('./VerifyToken');
-const bcrypt = require('bcryptjs');
-const config = require('../config');
 
 router.post('/register', (req: express.Request, res: express.Response) => {
     let hashedPassword = bcrypt.hashSync(req.body.password, 8);
