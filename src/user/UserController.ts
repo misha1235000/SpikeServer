@@ -13,9 +13,9 @@ router.post('/', function (req: Request, res: Response) {
             email : req.body.email,
             password : req.body.password
         }, 
-        function (err: Error, user: User) {
+        (err: Error, user: User) => {
             if (err) return res.status(500).send("There was a problem adding the information to the database.");
-            res.status(200).send(user);
+            return res.status(200).send(user);
         });
 });
 
@@ -23,7 +23,7 @@ router.post('/', function (req: Request, res: Response) {
 router.get('/', function (req: Request, res: Response) {
     UserModel.find({}, (err: Error, users: User[]) => {
         if (err) return res.status(500).send("There was a problem finding the users.");
-        res.status(200).send(users);
+        return res.status(200).send(users);
     });
 });
 
@@ -32,7 +32,7 @@ router.get('/:id', function (req: Request, res: Response) {
     UserModel.findById(req.params.id, (err: Error, user: User) => {
         if (err) return res.status(500).send("There was a problem finding the user.");
         if (!user) return res.status(404).send("No user found.");
-        res.status(200).send(user);
+        return res.status(200).send(user);
     });
 });
 
@@ -40,7 +40,7 @@ router.get('/:id', function (req: Request, res: Response) {
 router.delete('/:id', function (req: Request, res: Response) {
     UserModel.findByIdAndRemove(req.params.id, (err: Error, user: User) => {
         if (err) return res.status(500).send("There was a problem deleting the user.");
-        res.status(200).send("User: "+ user.name +" was deleted.");
+        return res.status(200).send("User: "+ user.name +" was deleted.");
     });
 });
 
@@ -48,7 +48,7 @@ router.delete('/:id', function (req: Request, res: Response) {
 router.put('/:id', (req: Request, res: Response) => {
     UserModel.findByIdAndUpdate(req.params.id, req.body, {new: true}, (err: Error, user: User) => {
         if (err) return res.status(500).send("There was a problem updating the user.");
-        res.status(200).send(user);
+        return res.status(200).send(user);
     });
 });
 

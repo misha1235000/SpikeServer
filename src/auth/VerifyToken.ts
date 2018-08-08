@@ -19,6 +19,8 @@ function verifyToken(req: any, res: express.Response, next: NextFunction) {
     req.userId = decoded.id;
     return next();
   });
+
+  return;
 }
 
 module.exports = verifyToken;
