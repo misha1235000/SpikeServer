@@ -1,13 +1,12 @@
-var express = require('express');
+import * as express from 'express';
 var router = express.Router();
 
 import { UserModel } from './user.model';
 import { User } from './user.interface';
-import { Request, Response } from '../../node_modules/@types/express';
 import { Error } from 'mongoose';
 
 // CREATES A NEW USER
-router.post('/', function (req: Request, res: Response) {
+router.post('/', (req: express.Request, res: express.Response) => {
     UserModel.create({
             name : req.body.name,
             email : req.body.email,
@@ -20,7 +19,7 @@ router.post('/', function (req: Request, res: Response) {
 });
 
 // RETURNS ALL THE USERS IN THE DATABASE
-router.get('/', function (req: Request, res: Response) {
+router.get('/', (req: express.Request, res: express.Response) => {
     UserModel.find({}, (err: Error, users: User[]) => {
         if (err) return res.status(500).send("There was a problem finding the users.");
         return res.status(200).send(users);
@@ -28,26 +27,10 @@ router.get('/', function (req: Request, res: Response) {
 });
 
 // GETS A SINGLE USER FROM THE DATABASE
-router.get('/:id', function (req: Request, res: Response) {
+router.get('/:id', (req: express.Request, res: express.Response) => {
     UserModel.findById(req.params.id, (err: Error, user: User) => {
         if (err) return res.status(500).send("There was a problem finding the user.");
         if (!user) return res.status(404).send("No user found.");
-        return res.status(200).send(user);
-    });
-});
-
-// DELETES A USER FROM THE DATABASE
-router.delete('/:id', function (req: Request, res: Response) {
-    UserModel.findByIdAndRemove(req.params.id, (err: Error, user: User) => {
-        if (err) return res.status(500).send("There was a problem deleting the user.");
-        return res.status(200).send("User: "+ user.name +" was deleted.");
-    });
-});
-
-// UPDATES A SINGLE USER IN THE DATABASE
-router.put('/:id', (req: Request, res: Response) => {
-    UserModel.findByIdAndUpdate(req.params.id, req.body, {new: true}, (err: Error, user: User) => {
-        if (err) return res.status(500).send("There was a problem updating the user.");
         return res.status(200).send(user);
     });
 });
