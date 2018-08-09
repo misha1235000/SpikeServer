@@ -1,4 +1,6 @@
-import * as mongoose from 'mongoose'; 
+import { model, Document } from 'mongoose'; 
+import * as mongoose from 'mongoose';
+import { IUser } from './user.interface';
 const UserSchema = new mongoose.Schema({  
   name: String,
   hostname: String,
@@ -7,4 +9,4 @@ const UserSchema = new mongoose.Schema({
 });
 mongoose.model('User', UserSchema);
 
-export const UserModel = mongoose.model('User');
+export const UserModel = model<IUser & Document>('User', UserSchema);

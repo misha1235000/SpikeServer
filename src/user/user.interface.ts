@@ -1,4 +1,4 @@
-export class User {
+export class IUser {
     _id: string;
     name: string;
     hostname: string;
