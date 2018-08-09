@@ -2,11 +2,10 @@ import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { db } from './db';
 
-
 const app = express();
 
-import { UserController } from './user/UserController';
-import { AuthController } from './auth/AuthController';
+import { UserRouter } from './user/user.router';
+import { AuthController } from './auth/auth.controller';
 
 // Headers
 app.use((req, res, next) => {
@@ -19,7 +18,7 @@ app.use((req, res, next) => {
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use('/users', UserController);
+app.use('/api/user', new UserRouter().router);
 app.use('/api/auth', AuthController);
 
 export const App = app;
