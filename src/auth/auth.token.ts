@@ -2,7 +2,7 @@ import * as jwt from 'jsonwebtoken';
 import { config } from '../config';
 import * as express from 'express';
 import { NextFunction } from '../../node_modules/@types/connect';
-
+/*
 function verifyToken(req: any, res: express.Response, next: NextFunction){
   let token = req.headers['authorization'];
 
@@ -21,4 +21,4 @@ function verifyToken(req: any, res: express.Response, next: NextFunction){
   });
 }
 
-export const VerifyToken = verifyToken;
+export const VerifyToken = verifyToken;*/
