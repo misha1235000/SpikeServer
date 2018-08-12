@@ -4,7 +4,7 @@
   "description": "Server side of the register servers project",
   "main": "server.js",
   "scripts": {
-    "start": "tsc && set NODE_ENV=production&& node ./dist/app.js",
+    "start": "tsc && set NODE_ENV=production&& node ./dist/server.js",
     "test-env": "tsc && set NODE_ENV=test",
     "test": "npm run test-env&& mocha --recursive dist/**/*.spec.js --exit",
     "validation-test": "npm run test-env&& mocha --recursive 'dist/**/*.validator.spec.js' --exit",
