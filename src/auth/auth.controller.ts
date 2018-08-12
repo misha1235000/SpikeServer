@@ -15,7 +15,7 @@ export class AuthController {
             try {
                 createdUser = await UserRepository.create(user);
             } catch(err) {
-                return res.status(500).send("Error in creating user");
+                return res.status(500).send({ auth: false, message: 'Error in creating user' });
             }
 
             const token = jwt.sign({ id: createdUser._id }, config.secret, {
@@ -58,10 +58,10 @@ export class AuthController {
 
                 return res.status(200).send({ auth: true, token: token });
             } else {
-                return res.status(404).send('No user found.');
+                return res.status(404).send({ auth: false, message: 'No user found.' });
             }
         } catch(err) {
-            return res.status(404).send('No user found.');
+            return res.status(404).send({ auth: false, message: 'No user found.' });
         }        
     }
 
