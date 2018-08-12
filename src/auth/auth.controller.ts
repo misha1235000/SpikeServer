@@ -1,8 +1,53 @@
-// AuthController
+import { Request, Response, NextFunction } from 'express';
+import { UserValidator } from '../user/user.validator';
+import { UserRepository } from '../user/user.repository';
+import { IUser } from '../user/user.interface';
+import * as bcrypt from 'bcrypt';
+import * as jwt from 'jsonwebtoken';
+import { config } from '../config';
 
+export class AuthController {
+    public static async register(req: Request, res: Response) {
+        let user = req.body.user as IUser;
+        user.password = bcrypt.hashSync(user.password, 8);
+        if (UserValidator.isValid(user)) {
+            const createdUser = await UserRepository.create(user);
+            const token = jwt.sign({ id: createdUser._id }, config.secret, {
+                expiresIn: 60 // 24 Hours
+            });
+            
+            return res.status(200).send({ auth: true, token: token });
+        }
+
+        throw new Error("Creation Error.");
+    }
+
+    public static async authorize(req: Request, res: Response, next: NextFunction) {
+        const token = req.headers['authorization'];
+        
+        if (!token) {
+            return res.status(401).send({ auth: false, message: 'No token provided.' }).redirect('/');
+        }
+    
+        jwt.verify(token, config.secret, (err: Error, decoded: any) => {
+            if (err) {
+                return res.status(500).send({ auth: false, message: 'Failed to authenticate token.' }).redirect('/');
+            }
+
+            UserRepository.findById(decoded.id).then((returnedUser) => {
+                if (returnedUser) {
+                    return next(returnedUser);
+                }
+            });
+        });
+    }
+}
+
+// AuthController
+/*
 import { NextFunction } from "../../node_modules/@types/connect";
 import { Error } from "mongoose";
-import { UserModel } from "../user/user.model";
+import { UserService } from "../user/user.service";
 import * as express from 'express';
 import { Request, Response } from 'express';
 import { IUser } from "../user/user.interface";
@@ -14,27 +59,23 @@ import { config } from '../config';
 const router = express.Router();
 
 router.post('/register', (req: Request, res: Response) => {
-    let hashedPassword = bcrypt.hashSync(req.body.password, 8);
-
-    UserModel.create({
-        name: req.body.name,
-        email: req.body.email,
-        password: hashedPassword
-    },
-    (err: Error, user: IUser) => {
-        if (err) {
-            return res.status(500).send("There was a problem registering the user.");
-        }
-
+    console.log("IN REGISTER");
+    console.log(req.body.user);
+    //let hashedPassword = bcrypt.hashSync(req.body.password, 8);
+    req.body.user.password = bcrypt.hashSync(req.body.user.password, 8);
+    UserService.create(req.body.user).then((user: IUser) => {
+        console.log("AFTER CREATE");
         // Create a token
         let token = jwt.sign({ id: user._id }, config.secret, {
           expiresIn: 60 // 24 Hours
         })
 
         return res.status(200).send({ auth: true, token: token });
+    }).catch((err: Error) => {
+         return res.status(500).send(err + "test");
     });
 });
-
+/*
 router.get('/', VerifyToken, (req: Request, res: Response, next: NextFunction) => {
     let token = req.headers['authorization'];
     if (!token) {
@@ -45,7 +86,7 @@ router.get('/', VerifyToken, (req: Request, res: Response, next: NextFunction) =
         if (err) {
             return res.status(500).send({ auth: false, message: 'Failed to authenticate token.' }).redirect('/');
         }
-        
+        /*
         UserModel.findById(decoded.id, 
         { password: 0, _id: 0, name: 0},
         (err: Error, user: IUser) => {
@@ -58,7 +99,7 @@ router.get('/', VerifyToken, (req: Request, res: Response, next: NextFunction) =
             }
 
             return next(user);
-        });
+        });*//*
     });
 });
 
@@ -68,15 +109,12 @@ router.use((user: IUser, req: Request, res: Response, next: NextFunction) => {
 });
 
 router.post('/login', (req: Request, res: Response) => {
-    UserModel.findOne({ email: req.body.email }, (err: Error, user: IUser) => {
-      if (err) {
-          return res.status(500).send('Error on the server.');
-      }
+    UserService.findByUsername(req.body.user.username).then((user: IUser | null) => {
       if (!user) {
           return res.status(404).send('No user found.');
       }
 
-      let passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
+      let passwordIsValid = bcrypt.compareSync(req.body.user.password, user.password);
 
       if (!passwordIsValid) {
           return res.status(401).send({ auth: false, token: null });
@@ -95,3 +133,4 @@ router.get('/logout', (req: Request, res: Response) => {
 });
 
 export const AuthController = router;
+*/
