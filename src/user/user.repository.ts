@@ -4,7 +4,7 @@ import { IUser } from './user.interface';
 export class UserRepository {
 
     public static findById(id: string): Promise<IUser | null> {
-        return UserModel.findOne({ _id: id }).exec();
+        return UserModel.findOne({ _id: id }, {password: 0}).exec();
     }
 
     public static findByUsername(username: string): Promise<IUser | null> {
@@ -12,7 +12,11 @@ export class UserRepository {
     }
 
     public static create(user: IUser): Promise<IUser> {
-        return UserModel.create(user);
+        try {
+            return UserModel.create(user);
+        } catch(err) {
+            throw err;
+        }
     }
 
     public static update(id: string, user: Partial<IUser>): Promise<IUser | null> {
