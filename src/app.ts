@@ -1,11 +1,11 @@
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
-import { db } from './db';
+import * as mongoose from 'mongoose';
 
 const app = express();
 
 import { UserRouter } from './user/user.router';
-import { AuthController } from './auth/auth.controller';
+import { AuthRouter } from './auth/auth.router';
 
 // Headers
 app.use((req, res, next) => {
@@ -16,9 +16,15 @@ app.use((req, res, next) => {
     next();
 });
 
+mongoose.connect('mongodb://testuser:Test123@ds227171.mlab.com:27171/testjwt').then(() => {
+        console.log('Connected to mongo');
+    }).catch(() => {
+        console.log('error connecting to mongo');
+});
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api/user', new UserRouter().router);
-app.use('/api/auth', AuthController);
+app.use('/api/auth', new AuthRouter().router);
 
 export const App = app;
