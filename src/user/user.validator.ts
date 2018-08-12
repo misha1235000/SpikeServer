@@ -6,18 +6,18 @@ export class UserValidator {
     private static readonly maxTitleLength = 256;
 
     static isValid(user: IUser): boolean {
-        return user && UserValidator.isUsernameValid(user.name) &&
-               UserValidator.isHostnameValid(user.hostname) &&
-               UserValidator.isCallbackValid(user.callback) &&
+        return user && UserValidator.isUsernameValid(user.username) &&
+  //             UserValidator.isHostnameValid(user.hostname) &&
+  //             UserValidator.isCallbackValid(user.callback) &&
                UserValidator.isPasswordValid(user.password);
     }
 
     static isUsernameValid(username: string): boolean {
-        const usernameRegex: RegExp = /[A-z0-9]{4, 15}/m;
+        const usernameRegex: RegExp = /[A-Za-z0-9]{4,15}/m;
         return usernameRegex.test(username);
     }
 
-    static isHostnameValid(hostname: string): boolean {
+ /*   static isHostnameValid(hostname: string): boolean {
         const hostnameRegex: RegExp = /(?:http|https):\/\/[A-z0-9]+/m;
         return hostnameRegex.test(hostname);
     }
@@ -25,10 +25,9 @@ export class UserValidator {
     static isCallbackValid(callback: string): boolean {
         const callbackRegex: RegExp = /(?:http|https):\/\/[A-z0-9]+\/[A-z0-9]+/m;
         return callbackRegex.test(callback);
-    }
+    }*/
 
     static isPasswordValid(password: string): boolean {
-        const passwordRegex: RegExp = /[A-z0-9!@#$%^&*()_-=+]/m;
-        return passwordRegex.test(password);
+        return true;
     }
 }

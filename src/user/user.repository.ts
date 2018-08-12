@@ -7,6 +7,10 @@ export class UserRepository {
         return UserModel.findOne({ _id: id }).exec();
     }
 
+    public static findByUsername(username: string): Promise<IUser | null> {
+        return UserModel.findOne({ username: username }).exec();
+    }
+
     public static create(user: IUser): Promise<IUser> {
         return UserModel.create(user);
     }

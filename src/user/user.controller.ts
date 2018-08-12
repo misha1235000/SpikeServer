@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
 import { UserValidator } from './user.validator';
-import { UserService } from './user.service';
+import { UserRepository } from './user.repository';
 import { IUser } from './user.interface';
 
 export class UserController {
     public static async create(req: Request, res: Response) {
         const user = req.body as IUser;
         if (UserValidator.isValid(user)) {
-            const createdUser = await UserService.create(user);
+            const createdUser = await UserRepository.create(user);
             return res.json({ user: createdUser });
         }
 
@@ -20,7 +20,7 @@ export class UserController {
     public static async findById(req: Request, res: Response) {
         const id = req.params.id;
         if (id) {
-            const user = await UserService.findById(id);
+            const user = await UserRepository.findById(id);
 
             if (!user) {
                 throw new Error("No User Found");
@@ -37,7 +37,7 @@ export class UserController {
         const user = req.body as Partial<IUser>;
 
         if (Object.keys(user).length > 0 && id) {
-            const updatedUser = await UserService.update(id, user);
+            const updatedUser = await UserRepository.update(id, user);
 
             if (!updatedUser) {
                 throw new Error("User to update not found.");
@@ -53,7 +53,7 @@ export class UserController {
         const id = req.params.id;
 
         if (id) {
-            const deletedUser = await UserService.delete(id);
+            const deletedUser = await UserRepository.delete(id);
 
             if (!deletedUser) {
                 throw new Error("User to delete not found.");

@@ -1,15 +1,11 @@
 export class IUser {
     _id: string;
-    name: string;
-    hostname: string;
-    callback: string;
+    username: string;
     password: string;
 
-    constructor(_id: string, name: string, hostname: string, callback: string, password: string) {
+    constructor(username: string, password: string, _id: string) {
         this._id = _id;
-        this.name = name;
-        this.hostname = hostname;
-        this.callback = callback;
+        this.username = username;
         this.password = password;
     }
 };
