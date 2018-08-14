@@ -19,7 +19,7 @@ export class AuthController {
             }
 
             const token = jwt.sign({ id: createdUser._id }, config.secret, {
-                expiresIn: 600 // 24 Hours
+                expiresIn: 30 // 24 Hours
             });
             
             return res.status(200).send({ auth: true, token: token });
