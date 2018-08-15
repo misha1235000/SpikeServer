@@ -19,7 +19,7 @@ export class AuthController {
             }
 
             const token = jwt.sign({ id: createdUser._id }, config.secret, {
-                expiresIn: 30 // 24 Hours
+                expiresIn: 600 // 24 Hours
             });
             
             return res.status(200).send({ auth: true, token: token });
@@ -32,7 +32,7 @@ export class AuthController {
         const token = req.headers['authorization'];
         
         if (!token) {
-            return res.status(401).send({ auth: false, message: 'No token provided.' }).redirect('/');
+            return res.status(401).send({ auth: false, message: 'No token provided.' });
         }
         
         try {
@@ -40,7 +40,7 @@ export class AuthController {
             const returnedUser: IUser | null = await UserRepository.findById(jwtVerify.id);
             return res.status(200).send(returnedUser);
         } catch(err) {
-            return res.status(500).send({ auth: false, message: err.message}).redirect('/');
+            return res.status(500).send({ auth: false, message: err.message});
         }
     }
 
