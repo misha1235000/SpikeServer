@@ -1,5 +1,4 @@
-import { Types } from "mongoose";
-import { IUser } from "./user.interface";
+import { IUser } from './user.interface';
 
 export class UserValidator {
 
@@ -17,17 +16,9 @@ export class UserValidator {
         return usernameRegex.test(username);
     }
 
- /*   static isHostnameValid(hostname: string): boolean {
-        const hostnameRegex: RegExp = /(?:http|https):\/\/[A-z0-9]+/m;
-        return hostnameRegex.test(hostname);
-    }
-
-    static isCallbackValid(callback: string): boolean {
-        const callbackRegex: RegExp = /(?:http|https):\/\/[A-z0-9]+\/[A-z0-9]+/m;
-        return callbackRegex.test(callback);
-    }*/
-
     static isPasswordValid(password: string): boolean {
-        return true;
+        // Minimum eight characters, at least one letter, one number and one special character
+        const passwordRegex: RegExp = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$/;
+        return passwordRegex.test(password);
     }
 }
