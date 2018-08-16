@@ -18,17 +18,21 @@ export class UserController {
 
     public static async findById(req: Request, res: Response) {
         const id = req.params.id;
+
         if (id) {
-            const user = await UserRepository.findById(id);
 
-            if (!user) {
-                throw new Error('No User Found');
+            try {
+                const user = await UserRepository.findById(id);
+                if (!user) {
+                    return res.status(404).send('User not found.');
+                }
+                return res.json({ user });
+            } catch (err) {
+                return res.status(500).send('Error finding user by id.');
             }
-
-            return res.json({ user });
         }
 
-        throw new Error('Find by ID error.');
+        return res.status(400).send('id parameter is missing');
     }
 
     public static async update(req: Request, res: Response) {
