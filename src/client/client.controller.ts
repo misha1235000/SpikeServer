@@ -8,65 +8,72 @@ import { config } from '../config';
 export class ClientController {
     public static async create(req: Request, res: Response) {
         const client = req.body as IClient;
+
         if (ClientValidator.isValid(client)) {
-            const createdClient = await ClientRepository.create(client);
-            return res.json({ client: createdClient });
+            try {
+                const createdClient = await ClientRepository.create(client);
+                return res.json({ client: createdClient });
+            } catch (err) {
+                return res.json({ error: err });
+            }
         }
 
-        throw new Error("Creation Error.");
-    }
-
-    public static async find(req: Request, res: Response) {
+        return res.json({ error: 'Error creating the client.' });
     }
 
     public static async findByToken(req: Request, res: Response) {
         const token = req.headers['authorization'];
         
         if (!token) {
-            return res.status(401).send({ auth: false, message: 'No token provided.' });
+            return res.status(401).send({ error: 'No token provided.' });
         }
         
         try {
             const jwtVerify: any = await jwt.verify(token, config.secret);
             const returnedClients: IClient[] | null = await ClientRepository.findByTeamId(jwtVerify.id);
-            return res.status(200).send({auth: false, clients: returnedClients});
+            return res.status(200).send(returnedClients);
         } catch(err) {
-            return res.status(500).send({ auth: false, message: err.message});
+            return res.status(500).send({error: err});
         }
-
-        throw new Error("Find by Token Error.");
     }
 
     public static async update(req: Request, res: Response) {
-        const id = req.params.id;
         const client = req.body as Partial<IClient>;
 
-        if (Object.keys(client).length > 0 && id) {
-            const updatedClient = await ClientRepository.update(id, client);
+        if (Object.keys(client).length > 0 && client.id) {
+            try {
+                const updatedClient = await ClientRepository.update(client.id, client);
 
-            if (!updatedClient) {
-                throw new Error("Client to update not found.");
+                if (!updatedClient) {
+                    res.status(404).send({error: 'Client Not Found'});
+                }
+
+                return res.json({ client: updatedClient });
+            } catch (err) {
+                return res.json({ error: err });
             }
-
-            return res.json({ client: updatedClient });
         }
 
-        throw new Error("Update client error.");
+        return res.json({ error: 'Update Client Error' });
     }
 
     public static async delete(req: Request, res: Response) {
         const id = req.params.id;
 
         if (id) {
-            const deletedClient = await ClientRepository.delete(id);
+            try {
+                const deletedClient = await ClientRepository.delete(id);
 
-            if (!deletedClient) {
-                throw new Error("Client to delete not found.");
+                if (!deletedClient) {
+                    res.status(404).send({ error: 'Client Not Found' });
+                }
+
+                return res.json(deletedClient);
+            } catch(err) {
+                return res.json({ error: err });
             }
-
-            return res.json(deletedClient);
         }
 
-        throw new Error("Delete client error.");
+        return res.json({ error: 'Delete Client Error' });
     }
 }
