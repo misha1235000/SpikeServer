@@ -1,15 +1,18 @@
 import { model, Document, Schema } from 'mongoose';
 import { IUser } from './user.interface';
+import { UserValidator } from './user.validator';
 
 const UserSchema = new Schema({
     username: {
         type: String,
         unique: true,
         required: true,
+        validate: [UserValidator.isUsernameValid, 'Username isn\'t valid'],
     },
     password: {
         type: String,
         required: true,
+        validate: [UserValidator.isPasswordValid, 'Password isn\'t valid'],
     },
 });
 
