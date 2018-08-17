@@ -26,4 +26,4 @@ UserSchema.virtual('clients', {
     options: { sort: { name: -1 } },
 });
 
-export const UserModel = model<IUser & Document>('User', UserSchema);
+export const UserModel = model<IUser>('User', UserSchema);

@@ -1,4 +1,4 @@
-import { IClient } from "./client.interface";
+import { IClient } from './client.interface';
 
 export class ClientValidator {
 
@@ -7,7 +7,7 @@ export class ClientValidator {
                        ClientValidator.isTokenValid(client.token) &&
                        ClientValidator.isTeamIdValid(client.teamId) &&
                        ClientValidator.isNameValid(client.name) &&
-                       ClientValidator.isHostnameValid(client.hostname)
+                       ClientValidator.isHostnameValid(client.hostname);
     }
 
     static isClientIdValid(clientId: string): boolean {

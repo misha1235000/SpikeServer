@@ -15,7 +15,7 @@ export class ClientRepository {
     public static create(client: IClient): Promise<IClient> {
         try {
             return ClientModel.create(client);
-        } catch(err) {
+        } catch (err) {
             throw err;
         }
     }
