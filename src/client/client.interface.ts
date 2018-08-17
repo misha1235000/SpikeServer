@@ -6,4 +6,4 @@ export interface IClient extends Document {
     teamId: string;
     hostname: string;
     token: string;
-};
+}

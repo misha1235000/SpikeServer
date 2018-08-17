@@ -23,17 +23,17 @@ export class ClientController {
 
     public static async findByToken(req: Request, res: Response) {
         const token = req.headers['authorization'];
-        
+
         if (!token) {
             return res.status(401).send({ error: 'No token provided.' });
         }
-        
+
         try {
             const jwtVerify: any = await jwt.verify(token, config.secret);
             const returnedClients: IClient[] | null = await ClientRepository.findByTeamId(jwtVerify.id);
             return res.status(200).send(returnedClients);
-        } catch(err) {
-            return res.status(500).send({error: err});
+        } catch (err) {
+            return res.status(500).send({ error: err });
         }
     }
 
@@ -45,7 +45,7 @@ export class ClientController {
                 const updatedClient = await ClientRepository.update(client.id, client);
 
                 if (!updatedClient) {
-                    res.status(404).send({error: 'Client Not Found'});
+                    res.status(404).send({ error: 'Client Not Found' });
                 }
 
                 return res.json({ client: updatedClient });
@@ -69,7 +69,7 @@ export class ClientController {
                 }
 
                 return res.json(deletedClient);
-            } catch(err) {
+            } catch (err) {
                 return res.json({ error: err });
             }
         }

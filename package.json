@@ -36,6 +36,7 @@
     "@types/mongoose": "^5.2.4",
     "@types/morgan": "^1.7.35",
     "@types/node": "^10.5.7",
+    "@types/simple-oauth2": "^2.2.0",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
     "tslint": "^5.11.0",
@@ -48,6 +49,7 @@
     "express": "^4.16.3",
     "jsonwebtoken": "^8.3.0",
     "mongoose": "^5.2.7",
-    "morgan": "^1.9.0"
+    "morgan": "^1.9.0",
+    "simple-oauth2": "^2.2.1"
   }
 }

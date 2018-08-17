@@ -17,9 +17,9 @@ app.use((req, res, next) => {
 });
 
 mongoose.connect('mongodb://testuser:Test123@ds227171.mlab.com:27171/testjwt').then(() => {
-        console.log('Connected to mongo');
-    }).catch(() => {
-        console.log('error connecting to mongo');
+    console.log('Connected to mongo');
+}).catch(() => {
+    console.log('error connecting to mongo');
 });
 
 app.use(bodyParser.json());
