@@ -1,3 +1,5 @@
+// user.validator
+
 import { IUser } from './user.interface';
 
 export class UserValidator {
@@ -5,9 +7,7 @@ export class UserValidator {
     private static readonly maxTitleLength = 256;
 
     static isValid(user: IUser): boolean {
-        return user && UserValidator.isUsernameValid(user.username) &&
-  //             UserValidator.isHostnameValid(user.hostname) &&
-  //             UserValidator.isCallbackValid(user.callback) &&
+        return user && UserValidator.isUsernameValid(user.username)
                UserValidator.isPasswordValid(user.password);
     }
 

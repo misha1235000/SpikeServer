@@ -1,3 +1,5 @@
+// app
+
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as mongoose from 'mongoose';
@@ -16,6 +18,7 @@ app.use((req, res, next) => {
     next();
 });
 
+// The connection to the mongodb.
 mongoose.connect('mongodb://testuser:Test123@ds227171.mlab.com:27171/testjwt').then(() => {
     console.log('Connected to mongo');
 }).catch(() => {

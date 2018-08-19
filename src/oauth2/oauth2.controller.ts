@@ -1,3 +1,5 @@
+// oauth2.controller
+
 import { create, AccessToken } from 'simple-oauth2';
 import { config } from '../config';
 

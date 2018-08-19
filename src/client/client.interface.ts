@@ -1,3 +1,5 @@
+// client.interface
+
 import { Document } from 'mongoose';
 
 export interface IClient extends Document {
