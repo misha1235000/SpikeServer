@@ -9,8 +9,8 @@ export class UserRepository {
      * Finds a specific user by ID
      * @param id - The id of a specific user.
      */
-    public static findById(id: string): Promise<IUser | null> {
-        return UserModel.findOne({ _id: id }, { password: 0 }).exec();
+    public static findById(id: string) {
+        return UserModel.findOne({ _id: id }, { password: 0 });
     }
 
     /**

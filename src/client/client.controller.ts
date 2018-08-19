@@ -16,16 +16,12 @@ export class ClientController {
     public static async create(req: Request, res: Response) {
         const client = req.body as IClient;
 
-        if (ClientValidator.isValid(client)) {
-            try {
-                const createdClient = await ClientRepository.create(client);
-                return res.json({ client: createdClient });
-            } catch (err) {
-                return res.json({ error: err });
-            }
+        try {
+            const createdClient = await ClientRepository.create(client);
+            return res.json({ client: createdClient });
+        } catch (err) {
+            return res.json({ error: err });
         }
-
-        return res.json({ error: 'Error creating the client.' });
     }
 
     /**

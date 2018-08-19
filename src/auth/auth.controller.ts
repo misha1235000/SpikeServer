@@ -48,7 +48,7 @@ export class AuthController {
      * Checks if the given token in the authorization header is valid.
      * @param req - Request
      * @param res - Response
-     * @param next - NextFunciton 
+     * @param next - NextFunciton
      */
     public static async authorize(req: Request, res: Response, next: NextFunction) {
         const token = req.headers['authorization'];

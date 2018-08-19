@@ -1,6 +1,7 @@
 // client.validator
 
 import { IClient } from './client.interface';
+import { UserRepository } from '../user/user.repository';
 
 export class ClientValidator {
 
@@ -13,21 +14,31 @@ export class ClientValidator {
     }
 
     static isClientIdValid(clientId: string): boolean {
-        return true;
+        return typeof clientId === 'string';
     }
 
     static isTokenValid(token: string): boolean {
-        return true;
+        return typeof token === 'string';
     }
 
-    static isTeamIdValid(teamId: string): boolean {
-        return true;
+    static async isTeamIdValid(teamId: string) {
+        try {
+            const returnedUser = await UserRepository.findById(teamId);
+
+            return !!returnedUser;
+        } catch (error) { // TODO: Refactor with errorHandler!!!!!!
+            return false;
+        }
     }
 
     static isNameValid(name: string): boolean {
-        return true;
+        const nameRegex: RegExp = /[A-Za-z0-9]{4,30}/m;
+
+        return nameRegex.test(name);
     }
     static isHostnameValid(hostname: string): boolean {
-        return true;
+        const hostnameRegex = /^https:\/\/(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/m;
+
+        return hostnameRegex.test(hostname);
     }
 }
