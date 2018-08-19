@@ -1,3 +1,5 @@
+// client.model
+
 import { model, Schema } from 'mongoose';
 import { IClient } from './client.interface';
 

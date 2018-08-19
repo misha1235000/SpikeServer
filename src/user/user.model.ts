@@ -1,4 +1,6 @@
-import { model, Document, Schema } from 'mongoose';
+// user.model
+
+import { model, Schema } from 'mongoose';
 import { IUser } from './user.interface';
 import { UserValidator } from './user.validator';
 

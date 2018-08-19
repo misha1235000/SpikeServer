@@ -1,3 +1,5 @@
+// user.interface
+
 import { Document } from 'mongoose';
 import { IClient } from '../client/client.interface';
 

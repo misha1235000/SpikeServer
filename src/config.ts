@@ -1,4 +1,4 @@
-// config.js
+// config
 
 export const config = {
 
