@@ -83,7 +83,7 @@ export class UserController {
         if (id) {
             try {
                 const deletedUser = await UserRepository.delete(id);
-                
+
                 return res.json(deletedUser);
             } catch (err) {
                 return res.status(400).send(err);
