@@ -1,6 +1,7 @@
 // team.repository
 
 import { TeamModel } from './team.model';
+import { DuplicateUnique } from './team.error';
 import { ITeam } from './team.interface';
 
 export class TeamRepository {
@@ -28,8 +29,12 @@ export class TeamRepository {
     public static create(team: ITeam): Promise<ITeam> {
         try {
             return TeamModel.create(team);
-        } catch (err) {
-            throw err;
+        } catch (error) {
+            if (error.code && error.code === '11000') {
+                throw new DuplicateUnique('Team name already exists.');
+            } else {
+                throw error;
+            }
         }
     }
 

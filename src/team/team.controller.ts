@@ -1,6 +1,7 @@
 // team.controller
 
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import { NotFound, InvalidParameter } from './team.error';
 import { TeamRepository } from './team.repository';
 import { ITeam } from './team.interface';
 
@@ -10,16 +11,16 @@ export class TeamController {
      * @param req - Request
      * @param res - Response
      */
-    public static async create(req: Request, res: Response) {
+    public static async create(req: Request, res: Response, next: NextFunction) {
         const team = req.body as ITeam;
 
-        try {
+        if (!team) {
             const createdTeam = await TeamRepository.create(team);
 
             return res.json({ team: createdTeam });
-        } catch (err) {
-            return res.status(400).send(err);
         }
+
+        throw new InvalidParameter('team parameter is missing');
     }
 
     /**
@@ -31,20 +32,16 @@ export class TeamController {
         const id = req.params.id;
 
         if (id) {
-            try {
-                const team = await TeamRepository.findById(id);
+            const team = await TeamRepository.findById(id);
 
-                if (!team) {
-                    return res.status(404).send('Team not found.');
-                }
-
-                return res.json({ team });
-            } catch (err) {
-                return res.status(500).send('Error finding team by id.');
+            if (!team) {
+                throw new NotFound('Team not found.');
             }
+
+            return res.json({ team });
         }
 
-        return res.status(400).send('id parameter is missing');
+        throw new InvalidParameter('_id parameter is missing.');
     }
 
     /**
@@ -52,24 +49,20 @@ export class TeamController {
      * @param req - Request
      * @param res - Response
      */
-    public static async update(req: Request, res: Response) {
+    public static async update(req: Request, res: Response, next: NextFunction) {
         const team = req.body as Partial<ITeam>;
 
         if (Object.keys(team).length > 0 && team._id) {
-            try {
-                const updatedTeam = await TeamRepository.update(team._id, team);
+            const updatedTeam = await TeamRepository.update(team._id, team);
 
-                if (!updatedTeam) {
-                    return res.status(400).send('Team not found');
-                }
-
-                return res.json({ team: updatedTeam });
-            } catch (err) {
-                return res.status(400).send(err);
+            if (!updatedTeam) {
+                throw new NotFound('Team not found.');
             }
+
+            return res.json({ team: updatedTeam });
         }
 
-        return res.status(400).send('_id parameter missing');
+        throw new InvalidParameter('_id parameter is missing.');
     }
 
     /**
@@ -77,19 +70,19 @@ export class TeamController {
      * @param req - Request
      * @param res - Response
      */
-    public static async delete(req: Request, res: Response) {
+    public static async delete(req: Request, res: Response, next: NextFunction) {
         const id = req.params.id;
 
         if (id) {
-            try {
-                const deletedTeam = await TeamRepository.delete(id);
+            const deletedTeam = await TeamRepository.delete(id);
 
-                return res.json(deletedTeam);
-            } catch (err) {
-                return res.status(400).send(err);
+            if (!deletedTeam) {
+                throw new NotFound('Team not found.');
             }
+
+            return res.json(deletedTeam);
         }
 
-        return res.status(400).send('Team id not provided');
+        throw new InvalidParameter('_id parameter is missing.');
     }
 }
