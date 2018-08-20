@@ -1,29 +1,29 @@
-// user.controller
+// team.controller
 
 import { Request, Response } from 'express';
-import { UserRepository } from './user.repository';
-import { IUser } from './user.interface';
+import { TeamRepository } from './team.repository';
+import { ITeam } from './team.interface';
 
-export class UserController {
+export class TeamController {
     /**
-     * Creates a new user.
+     * Creates a new team.
      * @param req - Request
      * @param res - Response
      */
     public static async create(req: Request, res: Response) {
-        const user = req.body as IUser;
+        const team = req.body as ITeam;
 
         try {
-            const createdUser = await UserRepository.create(user);
+            const createdTeam = await TeamRepository.create(team);
 
-            return res.json({ user: createdUser });
+            return res.json({ team: createdTeam });
         } catch (err) {
             return res.status(400).send(err);
         }
     }
 
     /**
-     * Finds a specific user by ID.
+     * Finds a specific team by ID.
      * @param req - Request
      * @param res - Response
      */
@@ -32,15 +32,15 @@ export class UserController {
 
         if (id) {
             try {
-                const user = await UserRepository.findById(id);
+                const team = await TeamRepository.findById(id);
 
-                if (!user) {
-                    return res.status(404).send('User not found.');
+                if (!team) {
+                    return res.status(404).send('Team not found.');
                 }
 
-                return res.json({ user });
+                return res.json({ team });
             } catch (err) {
-                return res.status(500).send('Error finding user by id.');
+                return res.status(500).send('Error finding team by id.');
             }
         }
 
@@ -48,22 +48,22 @@ export class UserController {
     }
 
     /**
-     * Updates an old user with a new given one.
+     * Updates an old team with a new given one.
      * @param req - Request
      * @param res - Response
      */
     public static async update(req: Request, res: Response) {
-        const user = req.body as Partial<IUser>;
+        const team = req.body as Partial<ITeam>;
 
-        if (Object.keys(user).length > 0 && user._id) {
+        if (Object.keys(team).length > 0 && team._id) {
             try {
-                const updatedUser = await UserRepository.update(user._id, user);
+                const updatedTeam = await TeamRepository.update(team._id, team);
 
-                if (!updatedUser) {
-                    return res.status(400).send('User not found');
+                if (!updatedTeam) {
+                    return res.status(400).send('Team not found');
                 }
 
-                return res.json({ user: updatedUser });
+                return res.json({ team: updatedTeam });
             } catch (err) {
                 return res.status(400).send(err);
             }
@@ -73,7 +73,7 @@ export class UserController {
     }
 
     /**
-     * Deletes a specific user by ID.
+     * Deletes a specific team by ID.
      * @param req - Request
      * @param res - Response
      */
@@ -82,14 +82,14 @@ export class UserController {
 
         if (id) {
             try {
-                const deletedUser = await UserRepository.delete(id);
+                const deletedTeam = await TeamRepository.delete(id);
 
-                return res.json(deletedUser);
+                return res.json(deletedTeam);
             } catch (err) {
                 return res.status(400).send(err);
             }
         }
 
-        return res.status(400).send('User id not provided');
+        return res.status(400).send('Team id not provided');
     }
 }

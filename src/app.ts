@@ -6,7 +6,7 @@ import * as mongoose from 'mongoose';
 
 const app = express();
 
-import { UserRouter } from './user/user.router';
+import { TeamRouter } from './team/team.router';
 import { AuthRouter } from './auth/auth.router';
 
 // Headers
@@ -19,15 +19,15 @@ app.use((req, res, next) => {
 });
 
 // The connection to the mongodb.
-mongoose.connect('mongodb://testuser:Test123@ds227171.mlab.com:27171/testjwt').then(() => {
+mongoose.connect('mongodb://devdb:Aa123456@ds125472.mlab.com:25472/teamdb').then(() => {
     console.log('Connected to mongo');
-}).catch(() => {
+}).catch((error) => {
     console.log('error connecting to mongo');
 });
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use('/api/user', new UserRouter().router);
+app.use('/api/team', new TeamRouter().router);
 app.use('/api/auth', new AuthRouter().router);
 
 export const App = app;

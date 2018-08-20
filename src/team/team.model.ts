@@ -1,26 +1,26 @@
-// user.model
+// team.model
 
 import { model, Schema } from 'mongoose';
-import { IUser } from './user.interface';
-import { UserValidator } from './user.validator';
+import { ITeam } from './team.interface';
+import { TeamValidator } from './team.validator';
 
-const UserSchema = new Schema({
-    username: {
+const TeamSchema = new Schema({
+    teamname: {
         type: String,
         unique: true,
         required: true,
-        validate: [UserValidator.isUsernameValid, 'Username isn\'t valid'],
+        validate: [TeamValidator.isTeamnameValid, 'Teamname isn\'t valid'],
     },
     password: {
         type: String,
         required: true,
-        validate: [UserValidator.isPasswordValid, 'Password isn\'t valid'],
+        validate: [TeamValidator.isPasswordValid, 'Password isn\'t valid'],
     },
 });
 
 // Virtual field for getting all the clients of specific team
 // Used via population as described in https://mongoosejs.com/docs/populate.html#populate-virtuals
-UserSchema.virtual('clients', {
+TeamSchema.virtual('clients', {
     ref: 'Client',
     localField: '_id',
     foreignField: 'teamId',
@@ -28,4 +28,4 @@ UserSchema.virtual('clients', {
     options: { sort: { name: -1 } },
 });
 
-export const UserModel = model<IUser>('User', UserSchema);
+export const TeamModel = model<ITeam>('Team', TeamSchema);
