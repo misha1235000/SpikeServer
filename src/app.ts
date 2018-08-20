@@ -8,6 +8,10 @@ const app = express();
 
 import { TeamRouter } from './team/team.router';
 import { AuthRouter } from './auth/auth.router';
+import { errorHandler } from './utils/error.handler';
+
+// Error handler
+app.use(errorHandler);
 
 // Headers
 app.use((req, res, next) => {
