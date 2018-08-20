@@ -1,9 +1,9 @@
 // auth.controller
 
 import { Request, Response, NextFunction } from 'express';
-import { UserValidator } from '../user/user.validator';
-import { UserRepository } from '../user/user.repository';
-import { IUser } from '../user/user.interface';
+import { TeamValidator } from '../team/team.validator';
+import { TeamRepository } from '../team/team.repository';
+import { ITeam } from '../team/team.interface';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { config } from '../config';
@@ -11,37 +11,37 @@ import { config } from '../config';
 export class AuthController {
 
     /**
-     * Register a new user to the mongo, and generates a JWT
-     * for the session of the current user. (As a login)
+     * Register a new team to the mongo, and generates a JWT
+     * for the session of the current team. (As a login)
      * @param req - Request
      * @param res - Response
      */
     public static async register(req: Request, res: Response) {
-        const user = req.body.user as IUser;
-
-        // Encrypting the password with bcrypt.
-        user.password = bcrypt.hashSync(user.password, 8);
+        const team = req.body.team as ITeam;
 
         // If all the validators pass.
-        if (UserValidator.isValid(user)) {
-            let createdUser: IUser;
+        if (TeamValidator.isValid(team)) {
+            let createdTeam: ITeam;
+
+            // Encrypting the password with bcrypt.
+            team.password = bcrypt.hashSync(team.password, 8);
 
             try {
-                // Calls the function that creates the user in mongo.
-                createdUser = await UserRepository.create(user);
+                // Calls the function that creates the team in mongo.
+                createdTeam = await TeamRepository.create(team);
             } catch (err) {
-                return res.status(500).send({ auth: false, message: 'Error in creating user' });
+                return res.status(500).send({ auth: false, message: 'Error in creating team' });
             }
 
             // Sign the JWT token for a specified period of time (In seconds).
-            const token = jwt.sign({ id: createdUser._id }, config.secret, {
+            const token = jwt.sign({ id: createdTeam._id }, config.secret, {
                 expiresIn: 600,
             });
 
             return res.status(200).send({ token, auth: true });
         }
 
-        return res.status(500).send({ error: 'Error creating user' });
+        return res.status(500).send({ error: 'Error creating team' });
     }
 
     /**
@@ -59,18 +59,18 @@ export class AuthController {
         }
 
         try {
-            // Check if the token is valid and use the token's ID to find the specified user.
+            // Check if the token is valid and use the token's ID to find the specified team.
             const jwtVerify: any = await jwt.verify(token, config.secret);
-            const returnedUser: IUser | null = await UserRepository.findById(jwtVerify.id);
+            const returnedTeam: ITeam | null = await TeamRepository.findById(jwtVerify.id);
 
-            return res.status(200).send(returnedUser);
+            return res.status(200).send(returnedTeam);
         } catch (err) {
             return res.status(500).send({ auth: false, message: err.message });
         }
     }
 
     /**
-     * Logins to a given username and password.
+     * Logins to a given teamname and password.
      * Also, generates a JWT for the login.
      * @param req - Request
      * @param res - Response
@@ -78,31 +78,31 @@ export class AuthController {
      */
     public static async login(req: Request, res: Response, next: NextFunction) {
         try {
-            // Find the user in the mongo by the username given in the request body.
-            const userReturned: IUser | null = await UserRepository.findByUsername(req.body.user.username);
+            // Find the team in the mongo by the teamname given in the request body.
+            const teamReturned: ITeam | null = await TeamRepository.findByTeamname(req.body.team.teamname);
 
-            if (userReturned) {
+            if (teamReturned) {
                 // Checks if the password is correct, using bcrypt compareSync function.
-                const passwordIsValid = bcrypt.compareSync(req.body.user.password, userReturned.password);
+                const passwordIsValid = bcrypt.compareSync(req.body.team.password, teamReturned.password);
 
                 if (!passwordIsValid) {
                     return res.status(401).send({ auth: false, token: null });
                 }
 
                 // Generate a JWT token.
-                const token = jwt.sign({ id: userReturned._id }, config.secret, { expiresIn: 600 });
+                const token = jwt.sign({ id: teamReturned._id }, config.secret, { expiresIn: 600 });
 
                 return res.status(200).send({ token, auth: true });
             }
-            return res.status(404).send({ auth: false, message: 'No user found.' });
+            return res.status(404).send({ auth: false, message: 'No team found.' });
 
         } catch (err) {
-            return res.status(404).send({ auth: false, message: 'No user found.' });
+            return res.status(404).send({ auth: false, message: 'No team found.' });
         }
     }
 
     /**
-     * Logout from a user.
+     * Logout from a team.
      * @param req - Request
      * @param res - Response
      * @param next - NextFunction

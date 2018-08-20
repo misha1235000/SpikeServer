@@ -19,7 +19,7 @@ const ClientSchema = new Schema({
     teamId: {
         type: String,
         unique: true,
-        ref: 'User',
+        ref: 'Team',
         required: true,
         validate: {
             isAsync: true,

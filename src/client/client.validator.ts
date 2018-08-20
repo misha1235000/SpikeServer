@@ -1,7 +1,7 @@
 // client.validator
 
 import { IClient } from './client.interface';
-import { UserRepository } from '../user/user.repository';
+import { TeamRepository } from '../team/team.repository';
 
 export class ClientValidator {
 
@@ -23,9 +23,9 @@ export class ClientValidator {
 
     static async isTeamIdValid(teamId: string) {
         try {
-            const returnedUser = await UserRepository.findById(teamId);
+            const returnedTeam = await TeamRepository.findById(teamId);
 
-            return !!returnedUser;
+            return !!returnedTeam;
         } catch (error) { // TODO: Refactor with errorHandler!!!!!!
             return false;
         }
