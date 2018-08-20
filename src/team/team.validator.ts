@@ -1,6 +1,7 @@
 // team.validator
 
 import { ITeam } from './team.interface';
+import { InvalidTeamname, InvalidPassword } from './team.error';
 
 export class TeamValidator {
     static isValid(team: ITeam): boolean {
@@ -11,13 +12,21 @@ export class TeamValidator {
     static isTeamnameValid(teamname: string): boolean {
         const teamnameRegex: RegExp = /[A-Za-z0-9]{4,15}/m;
 
-        return teamnameRegex.test(teamname);
+        if (teamnameRegex.test(teamname)) {
+            return true;
+        }
+
+        throw new InvalidTeamname('Teamname Invalid. 4 - 15 characters, contains letters or numbers');
     }
 
     static isPasswordValid(password: string): boolean {
         // Minimum eight characters, at least one letter, one number and one special character
-        const passwordRegex: RegExp = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$/;
+        const passwordRegex: RegExp = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,50}$/;
 
-        return passwordRegex.test(password);
+        if (passwordRegex.test(password)) {
+            return true;
+        }
+
+        throw new InvalidPassword('Password Invalid. 8 - 50 characters, at least one letter, one number and one special character');
     }
 }
