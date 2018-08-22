@@ -2,8 +2,8 @@
 
 import { IClient } from './client.interface';
 import { TeamRepository } from '../team/team.repository';
-import { InvalidClientId, InvalidName, InvalidHostname, NotFound } from './client.error';
-import { MongoError } from '../../node_modules/@types/mongodb';
+import { InvalidClientId, InvalidName, InvalidHostname } from './client.error';
+import { NotFound } from '../utils/error';
 
 export class ClientValidator {
 

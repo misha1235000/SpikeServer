@@ -3,7 +3,7 @@
 import { ClientModel } from './client.model';
 import { IClient } from './client.interface';
 import { DocumentQuery } from 'mongoose';
-import { DuplicateUnique } from './client.error';
+import { DuplicateUnique } from '../utils/error';
 
 export class ClientRepository {
 

@@ -1,24 +1,6 @@
 // client.error
 
-import { BaseError } from '../utils/error';
-
-export class DuplicateUnique extends BaseError {
-    constructor(message?: string) {
-        super(message || 'Duplicate Unique Field', 400);
-    }
-}
-
-export class NotFound extends BaseError {
-    constructor(message?: string) {
-        super(message || 'Not Found', 404);
-    }
-}
-
-export class InvalidParameter extends BaseError {
-    constructor(message?: string) {
-        super(message || 'Invalid Parameter Provided', 400);
-    }
-}
+import { BaseError, InvalidParameter } from '../utils/error';
 
 export class InvalidCallback extends BaseError {
     constructor(message?: string) {
@@ -26,20 +8,20 @@ export class InvalidCallback extends BaseError {
     }
 }
 
-export class InvalidClientId extends BaseError {
+export class InvalidClientId extends InvalidParameter {
     constructor(message?: string) {
-        super(message || 'Invalid Client Id Provided', 400);
+        super(message || 'Invalid Client Id Provided');
     }
 }
 
-export class InvalidHostname extends BaseError {
+export class InvalidHostname extends InvalidParameter {
     constructor(message?: string) {
-        super(message || 'Invalid Hostname Provided', 400);
+        super(message || 'Invalid Hostname Provided');
     }
 }
 
-export class InvalidName extends BaseError {
+export class InvalidName extends InvalidParameter {
     constructor(message?: string) {
-        super(message || 'Invalid Name Provided', 400);
+        super(message || 'Invalid Name Provided');
     }
 }
