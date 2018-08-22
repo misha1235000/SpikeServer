@@ -14,7 +14,7 @@ export class TeamController {
     public static async create(req: Request, res: Response, next: NextFunction) {
         const team = req.body as ITeam;
 
-        if (!team) {
+        if (team) {
             const createdTeam = await TeamRepository.create(team);
 
             return res.json({ team: createdTeam });
