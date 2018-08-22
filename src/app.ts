@@ -9,6 +9,7 @@ const app = express();
 import { TeamRouter } from './team/team.router';
 import { AuthRouter } from './auth/auth.router';
 import { errorHandler } from './utils/error.handler';
+import { AuthController } from './auth/auth.controller';
 
 // Error handler
 app.use(errorHandler);
@@ -31,7 +32,10 @@ mongoose.connect('mongodb://devdb:Aa123456@ds125472.mlab.com:25472/teamdb').then
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use('/api/team', new TeamRouter().router);
 app.use('/api/auth', new AuthRouter().router);
+
+app.use(AuthController.authorize);
+
+app.use('/api/team', new TeamRouter().router);
 
 export const App = app;

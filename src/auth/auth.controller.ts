@@ -47,7 +47,7 @@ export class AuthController {
      * @param res - Response
      * @param next - NextFunciton
      */
-    public static async authorize(req: Request, res: Response, next: NextFunction) {
+    public static async authorize(req: any, res: Response, next: NextFunction) {
         const token = req.headers['authorization'];
 
         // If the token wasn't in the authorization header.
@@ -65,7 +65,8 @@ export class AuthController {
                 throw new InvalidToken('Token signed with unexisting team.');
             }
 
-            return res.status(200).send(returnedTeam);
+            req.authorized = true;
+            next();
         } catch (err) {
             throw new InvalidToken('Invalid token provided.');
         }
