@@ -2,6 +2,8 @@
 
 import { IClient } from './client.interface';
 import { TeamRepository } from '../team/team.repository';
+import { InvalidClientId, InvalidName, InvalidHostname, NotFound } from './client.error';
+import { MongoError } from '../../node_modules/@types/mongodb';
 
 export class ClientValidator {
 
@@ -14,31 +16,47 @@ export class ClientValidator {
     }
 
     static isClientIdValid(clientId: string): boolean {
-        return typeof clientId === 'string';
+        if (typeof clientId === 'string') {
+            return true;
+        }
+
+        throw new InvalidClientId('ClientId must be a type of string.');
     }
 
     static isTokenValid(token: string): boolean {
-        return typeof token === 'string';
+        if (typeof token === 'string') {
+            return true;
+        }
+
+        throw new InvalidClientId('Token must be a type of string.');
     }
 
     static async isTeamIdValid(teamId: string) {
-        try {
-            const returnedTeam = await TeamRepository.findById(teamId);
+        const returnedTeam = await TeamRepository.findById(teamId);
 
-            return !!returnedTeam;
-        } catch (error) { // TODO: Refactor with errorHandler!!!!!!
-            return false;
+        if (returnedTeam) {
+            return true;
         }
+
+        throw new NotFound('Client not found.');
     }
 
     static isNameValid(name: string): boolean {
         const nameRegex: RegExp = /[A-Za-z0-9]{4,30}/m;
 
-        return nameRegex.test(name);
+        if (nameRegex.test(name)) {
+            return true;
+        }
+
+        throw new InvalidName('Client Name Invalid. 4 - 30 characters, contains letters or numbers');
     }
     static isHostnameValid(hostname: string): boolean {
         const hostnameRegex = /^https:\/\/(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/m;
 
-        return hostnameRegex.test(hostname);
+        if (hostnameRegex.test(hostname)) {
+            return true;
+        }
+
+        throw new InvalidHostname('Hostname Invalid. Need to be https://BASE_URL');
     }
 }
