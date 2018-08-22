@@ -1,33 +1,15 @@
 // team.error
 
-import { BaseError } from '../utils/error';
+import { InvalidParameter } from '../utils/error';
 
-export class DuplicateUnique extends BaseError {
+export class InvalidTeamname extends InvalidParameter {
     constructor(message?: string) {
-        super(message || 'Duplicate Unique Field', 400);
+        super(message || 'Invalid Team Name Provided');
     }
 }
 
-export class NotFound extends BaseError {
+export class InvalidPassword extends InvalidParameter {
     constructor(message?: string) {
-        super(message || 'Not Found', 404);
-    }
-}
-
-export class InvalidParameter extends BaseError {
-    constructor(message?: string) {
-        super(message || 'Invalid Parameter Provided', 400);
-    }
-}
-
-export class InvalidTeamname extends BaseError {
-    constructor(message?: string) {
-        super(message || 'Invalid Team Name Provided', 400);
-    }
-}
-
-export class InvalidPassword extends BaseError {
-    constructor(message?: string) {
-        super(message || 'Invalid Password Provided', 400);
+        super(message || 'Invalid Password Provided');
     }
 }

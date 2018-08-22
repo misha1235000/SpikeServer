@@ -1,7 +1,7 @@
 // team.controller
 
 import { Request, Response, NextFunction } from 'express';
-import { NotFound, InvalidParameter } from './team.error';
+import { NotFound, InvalidParameter } from '../utils/error';
 import { TeamRepository } from './team.repository';
 import { ITeam } from './team.interface';
 

@@ -6,7 +6,8 @@ import { ClientRepository } from './client.repository';
 import { IClient } from './client.interface';
 import * as jwt from 'jsonwebtoken';
 import { config } from '../config';
-import { InvalidParameter } from './client.error';
+import { InvalidParameter, NotFound } from '../utils/error';
+import { InvalidClientId } from './client.error';
 import { MongoError } from '../../node_modules/@types/mongodb';
 
 export class ClientController {
@@ -68,20 +69,16 @@ export class ClientController {
         const client = req.body as Partial<IClient>;
 
         if (Object.keys(client).length > 0 && client.id) {
-            try {
-                const updatedClient = await ClientRepository.update(client.id, client);
+            const updatedClient = await ClientRepository.update(client.id, client);
 
-                if (!updatedClient) {
-                    res.status(404).send({ error: 'Client Not Found' });
-                }
-
-                return res.json({ client: updatedClient });
-            } catch (err) {
-                return res.json({ error: err });
+            if (!updatedClient) {
+                throw new NotFound('Client not found.');
             }
+
+            return res.json({ client: updatedClient });
         }
 
-        return res.json({ error: 'Update Client Error' });
+        throw new InvalidClientId('Client id not provided.');
     }
 
     /**
@@ -92,20 +89,12 @@ export class ClientController {
     public static async delete(req: Request, res: Response) {
         const id = req.params.id;
 
-        if (id) {
-            try {
-                const deletedClient = await ClientRepository.delete(id);
+        const deletedClient = await ClientRepository.delete(id);
 
-                if (!deletedClient) {
-                    res.status(404).send({ error: 'Client Not Found' });
-                }
-
-                return res.json(deletedClient);
-            } catch (err) {
-                return res.json({ error: err });
-            }
+        if (!deletedClient) {
+            throw new NotFound('Client not found.');
         }
 
-        return res.json({ error: 'Delete Client Error' });
+        return res.json(deletedClient);
     }
 }
