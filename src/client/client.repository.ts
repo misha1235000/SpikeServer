@@ -3,6 +3,7 @@
 import { ClientModel } from './client.model';
 import { IClient } from './client.interface';
 import { DocumentQuery } from 'mongoose';
+import { DuplicateUnique } from './client.error';
 
 export class ClientRepository {
 
@@ -29,8 +30,12 @@ export class ClientRepository {
     public static create(client: IClient): Promise<IClient> {
         try {
             return ClientModel.create(client);
-        } catch (err) {
-            throw err;
+        } catch (error) {
+            if (error.code && error.code === '11000') {
+                throw new DuplicateUnique('client uniques already exists.');
+            } else {
+                throw error;
+            }
         }
     }
 

@@ -1,11 +1,13 @@
 // client.controller
 
 import { Request, Response } from 'express';
-import { ClientValidator } from './client.validator';
+import { Unauthorized, InvalidToken } from '../auth/auth.error';
 import { ClientRepository } from './client.repository';
 import { IClient } from './client.interface';
 import * as jwt from 'jsonwebtoken';
 import { config } from '../config';
+import { InvalidParameter } from './client.error';
+import { MongoError } from '../../node_modules/@types/mongodb';
 
 export class ClientController {
     /**
@@ -16,12 +18,13 @@ export class ClientController {
     public static async create(req: Request, res: Response) {
         const client = req.body as IClient;
 
-        try {
+        if (client) {
             const createdClient = await ClientRepository.create(client);
+
             return res.json({ client: createdClient });
-        } catch (err) {
-            return res.json({ error: err });
         }
+
+        throw new InvalidParameter('client parameter is missing.');
     }
 
     /**
@@ -33,7 +36,7 @@ export class ClientController {
         const token = req.headers['authorization'];
 
         if (!token) {
-            return res.status(401).send({ error: 'No token provided.' });
+            throw new Unauthorized('Unauthorized, No token provided.');
         }
 
         try {
@@ -42,9 +45,17 @@ export class ClientController {
             const jwtVerify: any = await jwt.verify(token, config.secret);
             const returnedClients: IClient[] | null = await ClientRepository.findByTeamId(jwtVerify.id);
 
+            if (!returnedClients) {
+                throw new InvalidToken('Invalid token, unexisiting clients provided.');
+            }
+
             return res.status(200).send(returnedClients);
         } catch (err) {
-            return res.status(500).send({ error: err });
+            if (err instanceof MongoError) {
+                throw err;
+            }
+
+            throw new InvalidToken('Invalid token provided.');
         }
     }
 
