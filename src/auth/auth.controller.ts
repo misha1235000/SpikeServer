@@ -7,7 +7,8 @@ import { ITeam } from '../team/team.interface';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { config } from '../config';
-import { InvalidParameter, InvalidToken, Unauthorized } from './auth.error';
+import { InvalidToken, Unauthorized } from './auth.error';
+import { InvalidParameter } from '../utils/error';
 
 export class AuthController {
 

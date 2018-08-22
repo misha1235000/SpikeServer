@@ -1,7 +1,7 @@
 // team.controller
 
 import { Request, Response, NextFunction } from 'express';
-import { NotFound, InvalidParameter } from './team.error';
+import { NotFound, InvalidParameter } from '../utils/error';
 import { TeamRepository } from './team.repository';
 import { ITeam } from './team.interface';
 
@@ -14,7 +14,7 @@ export class TeamController {
     public static async create(req: Request, res: Response, next: NextFunction) {
         const team = req.body as ITeam;
 
-        if (!team) {
+        if (team) {
             const createdTeam = await TeamRepository.create(team);
 
             return res.json({ team: createdTeam });
