@@ -7,6 +7,7 @@ import { ITeam } from '../team/team.interface';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { config } from '../config';
+import { InvalidParameter, InvalidToken, Unauthorized } from './auth.error';
 
 export class AuthController {
 
@@ -19,19 +20,15 @@ export class AuthController {
     public static async register(req: Request, res: Response) {
         const team = req.body.team as ITeam;
 
-        // If all the validators pass.
-        if (TeamValidator.isValid(team)) {
+        // If team parameter provided
+        if (team) {
             let createdTeam: ITeam;
 
             // Encrypting the password with bcrypt.
             team.password = bcrypt.hashSync(team.password, 8);
 
-            try {
-                // Calls the function that creates the team in mongo.
-                createdTeam = await TeamRepository.create(team);
-            } catch (err) {
-                return res.status(500).send({ auth: false, message: 'Error in creating team' });
-            }
+            // Calls the function that creates the team in mongo.
+            createdTeam = await TeamRepository.create(team);
 
             // Sign the JWT token for a specified period of time (In seconds).
             const token = jwt.sign({ id: createdTeam._id }, config.secret, {
@@ -41,7 +38,7 @@ export class AuthController {
             return res.status(200).send({ token, auth: true });
         }
 
-        return res.status(500).send({ error: 'Error creating team' });
+        throw new InvalidParameter('team parameter is missing.');
     }
 
     /**
@@ -55,7 +52,7 @@ export class AuthController {
 
         // If the token wasn't in the authorization header.
         if (!token) {
-            return res.status(401).send({ auth: false, message: 'No token provided.' });
+            throw new Unauthorized('Unauthorized, No token provided.');
         }
 
         try {
@@ -63,9 +60,14 @@ export class AuthController {
             const jwtVerify: any = await jwt.verify(token, config.secret);
             const returnedTeam: ITeam | null = await TeamRepository.findById(jwtVerify.id);
 
+            // Check if the token contains existing team
+            if (!returnedTeam) {
+                throw new InvalidToken('Token signed with unexisting team.');
+            }
+
             return res.status(200).send(returnedTeam);
         } catch (err) {
-            return res.status(500).send({ auth: false, message: err.message });
+            throw new InvalidToken('Invalid token provided.');
         }
     }
 
@@ -77,28 +79,25 @@ export class AuthController {
      * @param next - Next
      */
     public static async login(req: Request, res: Response, next: NextFunction) {
-        try {
-            // Find the team in the mongo by the teamname given in the request body.
-            const teamReturned: ITeam | null = await TeamRepository.findByTeamname(req.body.team.teamname);
+        const teamReturned: ITeam | null = await TeamRepository.findByTeamname(req.body.team.teamname);
 
-            if (teamReturned) {
-                // Checks if the password is correct, using bcrypt compareSync function.
-                const passwordIsValid = bcrypt.compareSync(req.body.team.password, teamReturned.password);
+        if (teamReturned) {
+            // Checks if the password is correct, using bcrypt compareSync function.
+            const passwordIsValid = bcrypt.compareSync(req.body.team.password, teamReturned.password);
 
-                if (!passwordIsValid) {
-                    return res.status(401).send({ auth: false, token: null });
-                }
-
-                // Generate a JWT token.
-                const token = jwt.sign({ id: teamReturned._id }, config.secret, { expiresIn: 600 });
-
-                return res.status(200).send({ token, auth: true });
+            if (!passwordIsValid) {
+                throw new Unauthorized('Incorrect teamname or password given.');
             }
-            return res.status(404).send({ auth: false, message: 'No team found.' });
 
-        } catch (err) {
-            return res.status(404).send({ auth: false, message: 'No team found.' });
+            // Generate a JWT token.
+            const token = jwt.sign({ id: teamReturned._id }, config.secret, { expiresIn: 600 });
+
+            return res.status(200).send({ token, auth: true });
         }
+
+        // For the sick of information gathering techniques, we should'nt give the user
+        // information if he entered right teamname.
+        throw new Unauthorized('Incorrect teamname or password given.');
     }
 
     /**
