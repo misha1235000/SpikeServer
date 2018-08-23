@@ -5,13 +5,8 @@ import * as bodyParser from 'body-parser';
 import * as mongoose from 'mongoose';
 import axios from 'axios';
 
-<<<<<<< HEAD
-const app = express();
-
 import { Wrapper } from './utils/wrapper';
-=======
 import { AuthController } from './auth/auth.controller';
->>>>>>> 73d166e81a5a6af35e50dd2521edfcab2392a355
 import { TeamRouter } from './team/team.router';
 import { AuthRouter } from './auth/auth.router';
 import { ClientRouter } from './client/client.router';
