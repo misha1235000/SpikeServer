@@ -8,6 +8,7 @@ const app = express();
 
 import { TeamRouter } from './team/team.router';
 import { AuthRouter } from './auth/auth.router';
+import { ClientRouter } from './client/client.router';
 import { errorHandler } from './utils/error.handler';
 import { AuthController } from './auth/auth.controller';
 
@@ -33,9 +34,8 @@ mongoose.connect('mongodb://devdb:Aa123456@ds125472.mlab.com:25472/teamdb').then
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api/auth', new AuthRouter().router);
-
-app.use(AuthController.authorize);
-
+app.use(AuthController.authorize); // The authorize middleware.
+app.use('/api/client', new ClientRouter().router);
 app.use('/api/team', new TeamRouter().router);
 
 export const App = app;
