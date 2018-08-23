@@ -6,14 +6,12 @@ import * as mongoose from 'mongoose';
 
 const app = express();
 
+import { Wrapper } from './utils/wrapper';
 import { TeamRouter } from './team/team.router';
 import { AuthRouter } from './auth/auth.router';
 import { ClientRouter } from './client/client.router';
 import { errorHandler } from './utils/error.handler';
 import { AuthController } from './auth/auth.controller';
-
-// Error handler
-app.use(errorHandler);
 
 // Headers
 app.use((req, res, next) => {
@@ -34,8 +32,11 @@ mongoose.connect('mongodb://devdb:Aa123456@ds125472.mlab.com:25472/teamdb').then
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api/auth', new AuthRouter().router);
-app.use(AuthController.authorize); // The authorize middleware.
+app.use(Wrapper.wrapAsync(AuthController.authorize)); // The authorize middleware.
 app.use('/api/client', new ClientRouter().router);
 app.use('/api/team', new TeamRouter().router);
+
+// Error handler
+app.use(errorHandler);
 
 export const App = app;

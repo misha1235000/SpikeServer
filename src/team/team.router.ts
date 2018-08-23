@@ -2,7 +2,7 @@
 
 import { Router } from 'express';
 import { TeamController } from './team.controller';
-import { Wrapper } from '../utils/warpper';
+import { Wrapper } from '../utils/wrapper';
 
 export class TeamRouter {
 
