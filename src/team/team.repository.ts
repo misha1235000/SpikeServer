@@ -1,7 +1,7 @@
 // team.repository
 
 import { TeamModel } from './team.model';
-import { DuplicateUnique } from './team.error';
+import { DuplicateUnique } from '../utils/error';
 import { ITeam } from './team.interface';
 
 export class TeamRepository {

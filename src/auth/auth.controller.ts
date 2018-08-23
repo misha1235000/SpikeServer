@@ -66,7 +66,7 @@ export class AuthController {
                 throw new InvalidToken('Token signed with unexisting team.');
             }
 
-            return res.status(200).send(returnedTeam);
+            next();
         } catch (err) {
             throw new InvalidToken('Invalid token provided.');
         }
