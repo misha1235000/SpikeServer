@@ -13,3 +13,9 @@ export class Unauthorized extends BaseError {
         super(message || 'Unauthorized', 401);
     }
 }
+
+export class Forbidden extends BaseError {
+    constructor(message?: string) {
+        super(message || 'Access is Forbidden', 403);
+    }
+}

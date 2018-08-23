@@ -3,12 +3,17 @@
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as mongoose from 'mongoose';
+import axios from 'axios';
 
 const app = express();
 
 import { TeamRouter } from './team/team.router';
 import { AuthRouter } from './auth/auth.router';
 import { errorHandler } from './utils/error.handler';
+import { config } from './config';
+
+// Axios global configuration
+axios.defaults.baseURL = config.axios.baseURL;
 
 // Error handler
 app.use(errorHandler);

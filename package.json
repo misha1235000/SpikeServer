@@ -27,6 +27,7 @@
   "homepage": "https://github.com/misha1235000/serverRegisterServer#readme",
   "devDependencies": {
     "@types/amqplib": "^0.5.8",
+    "@types/axios": "^0.14.0",
     "@types/bcrypt": "^2.0.0",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.4",
@@ -44,6 +45,7 @@
     "typescript": "^3.0.1"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "bcrypt": "^3.0.0",
     "body-parser": "^1.18.3",
     "express": "^4.16.3",
