@@ -8,7 +8,7 @@ import * as jwt from 'jsonwebtoken';
 import { config } from '../config';
 import { InvalidParameter, NotFound } from '../utils/error';
 import { InvalidClientId } from './client.error';
-import { MongoError } from '../../node_modules/@types/mongodb';
+import { MongoError } from 'mongodb';
 
 export class ClientController {
     /**
