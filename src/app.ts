@@ -3,14 +3,19 @@
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as mongoose from 'mongoose';
+import axios from 'axios';
 
-const app = express();
-
+import { AuthController } from './auth/auth.controller';
 import { TeamRouter } from './team/team.router';
 import { AuthRouter } from './auth/auth.router';
 import { ClientRouter } from './client/client.router';
 import { errorHandler } from './utils/error.handler';
-import { AuthController } from './auth/auth.controller';
+import { config } from './config';
+
+const app = express();
+
+// Axios global configuration
+axios.defaults.baseURL = config.axios.baseURL;
 
 // Error handler
 app.use(errorHandler);

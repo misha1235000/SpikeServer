@@ -19,5 +19,18 @@ export const config = {
                                                // Manage other clients.
     },
 
+    // Authorization server endpoints configurations
+    authorizationServerAPI: {
+        register: 'URL_TO_REGISTER_ENDPOINT',
+        read: 'URL_TO_READ_ENDPOINT',
+        update: 'URL_TO_UPDATE_ENDPOINT',
+        delete: 'URL_TO_DELETE_ENDPOINT',
+    },
+
+    // Axios global configuration
+    axios: {
+        baseURL: 'URL_TO_AUTHORIZATION_SERVER',
+    },
+
     secret: 'secretcode',
 };
