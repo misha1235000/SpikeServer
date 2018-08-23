@@ -1,7 +1,7 @@
 // client.router
 
 import { Router } from 'express';
-import { Wrapper } from '../utils/warpper';
+import { Wrapper } from '../utils/wrapper';
 import { ClientController } from './client.controller';
 
 export class ClientRouter {

@@ -1,7 +1,7 @@
 // auth.router
 
 import { Router } from 'express';
-import { Wrapper } from '../utils/warpper';
+import { Wrapper } from '../utils/wrapper';
 import { AuthController } from './auth.controller';
 
 export class AuthRouter {

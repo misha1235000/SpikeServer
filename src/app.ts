@@ -5,6 +5,7 @@ import * as bodyParser from 'body-parser';
 import * as mongoose from 'mongoose';
 import axios from 'axios';
 
+import { Wrapper } from './utils/wrapper';
 import { AuthController } from './auth/auth.controller';
 import { TeamRouter } from './team/team.router';
 import { AuthRouter } from './auth/auth.router';
@@ -16,9 +17,6 @@ const app = express();
 
 // Axios global configuration
 axios.defaults.baseURL = config.axios.baseURL;
-
-// Error handler
-app.use(errorHandler);
 
 // Headers
 app.use((req, res, next) => {
@@ -39,8 +37,11 @@ mongoose.connect('mongodb://devdb:Aa123456@ds125472.mlab.com:25472/teamdb').then
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api/auth', new AuthRouter().router);
-app.use(AuthController.authorize); // The authorize middleware.
+app.use(Wrapper.wrapAsync(AuthController.authorize)); // The authorize middleware.
 app.use('/api/client', new ClientRouter().router);
 app.use('/api/team', new TeamRouter().router);
+
+// Error handler
+app.use(errorHandler);
 
 export const App = app;
