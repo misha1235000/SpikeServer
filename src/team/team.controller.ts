@@ -29,7 +29,7 @@ export class TeamController {
      * @param res - Response
      */
     public static async findById(req: Request, res: Response) {
-        const id = req.params.id;
+        const id = req.teamId;
 
         if (id) {
             const team = await TeamRepository.findById(id);
