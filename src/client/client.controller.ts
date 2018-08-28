@@ -1,14 +1,10 @@
 // client.controller
 
 import { Request, Response } from 'express';
-import { Unauthorized, InvalidToken } from '../auth/auth.error';
 import { ClientRepository } from './client.repository';
 import { IClient } from './client.interface';
-import * as jwt from 'jsonwebtoken';
-import { config } from '../config';
 import { InvalidParameter, NotFound } from '../utils/error';
 import { InvalidClientId } from './client.error';
-import { MongoError } from 'mongodb';
 
 export class ClientController {
     /**
@@ -33,31 +29,21 @@ export class ClientController {
      * @param req - Request
      * @param res - Response
      */
+
     public static async findByToken(req: Request, res: Response) {
-        const token = req.headers['authorization'];
+        const id = req.teamId;
 
-        if (!token) {
-            throw new Unauthorized('Unauthorized, No token provided.');
-        }
-
-        try {
-            // Checks if a token is valid, and uses the decoded token to
-            // find the team by the ID of the decoded token.
-            const jwtVerify: any = await jwt.verify(token, config.secret);
-            const returnedClients: IClient[] | null = await ClientRepository.findByTeamId(jwtVerify.id);
+        if (id) {
+            const returnedClients: IClient[] | null = await ClientRepository.findByTeamId(id);
 
             if (!returnedClients) {
-                throw new InvalidToken('Invalid token, unexisiting clients provided.');
+                throw new NotFound('Clients not found.');
             }
 
             return res.status(200).send(returnedClients);
-        } catch (err) {
-            if (err instanceof MongoError) {
-                throw err;
-            }
-
-            throw new InvalidToken('Invalid token provided.');
         }
+
+        throw new InvalidParameter('id parameter is missing.');
     }
 
     /**

@@ -18,7 +18,7 @@ export class AuthController {
      * @param req - Request
      * @param res - Response
      */
-    public static async register(req: Request, res: Response) {
+    public static async register(req: any, res: Response) {
         const team = req.body.team as ITeam;
 
         // If team parameter provided
@@ -48,7 +48,7 @@ export class AuthController {
      * @param res - Response
      * @param next - NextFunciton
      */
-    public static async authorize(req: Request, res: Response, next: NextFunction) {
+    public static async authorize(req: any, res: Response, next: NextFunction) {
         const token = req.headers['authorization'];
 
         // If the token wasn't in the authorization header.
@@ -65,6 +65,8 @@ export class AuthController {
             if (!returnedTeam) {
                 throw new InvalidToken('Token signed with unexisting team.');
             }
+
+            req.teamId = jwtVerify.id;
 
             next();
         } catch (err) {
