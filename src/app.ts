@@ -3,8 +3,8 @@
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as mongoose from 'mongoose';
+import * as cors from 'cors';
 import axios from 'axios';
-
 import { Wrapper } from './utils/wrapper';
 import { AuthController } from './auth/auth.controller';
 import { TeamRouter } from './team/team.router';
@@ -18,20 +18,23 @@ const app = express();
 // Axios global configuration
 axios.defaults.baseURL = config.axios.baseURL;
 
-// Headers
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST');
-    res.setHeader('Access-Control-Allow-Headers', 'authorization,content-type');
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    next();
-});
+// CORS
+const options:cors.CorsOptions = {
+    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'X-Access-Token', 'authorization'],
+    credentials: true,
+    methods: 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
+    origin: '*',
+    preflightContinue: false,
+};
+
+app.use(cors(options));
+app.options('*', cors(options));
 
 // The connection to the mongodb.
 mongoose.connect('mongodb://devdb:Aa123456@ds125472.mlab.com:25472/teamdb').then(() => {
     console.log('Connected to mongo');
 }).catch((error) => {
-    console.log('error connecting to mongo');
+    console.log('Error connecting to mongo');
 });
 
 app.use(bodyParser.json());
