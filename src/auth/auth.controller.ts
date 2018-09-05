@@ -9,6 +9,7 @@ import * as jwt from 'jsonwebtoken';
 import { config } from '../config';
 import { InvalidToken, Unauthorized } from './auth.error';
 import { InvalidParameter } from '../utils/error';
+import { InvalidPassword } from '../team/team.error';
 
 export class AuthController {
 
@@ -20,23 +21,28 @@ export class AuthController {
      */
     public static async register(req: Request, res: Response) {
         const team = req.body.team as ITeam;
+        const passwordRegex: RegExp = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,50}$/;
 
         // If team parameter provided
         if (team) {
             let createdTeam: ITeam;
 
-            // Encrypting the password with bcrypt.
-            team.password = bcrypt.hashSync(team.password, 8);
+            if (!passwordRegex.test(team.password)) {
+                throw new InvalidPassword('Password Invalid. 8 - 50 characters, at least one letter, one number and one special character');
+            } else {
+                // Encrypting the password with bcrypt.
+                team.password = bcrypt.hashSync(team.password, 8);
 
-            // Calls the function that creates the team in mongo.
-            createdTeam = await TeamRepository.create(team);
+                // Calls the function that creates the team in mongo.
+                createdTeam = await TeamRepository.create(team);
 
-            // Sign the JWT token for a specified period of time (In seconds).
-            const token = jwt.sign({ id: createdTeam._id }, config.secret, {
-                expiresIn: 600,
-            });
+                // Sign the JWT token for a specified period of time (In seconds).
+                const token = jwt.sign({ id: createdTeam._id }, config.secret, {
+                    expiresIn: 600,
+                });
 
-            return res.status(200).send({ token, auth: true });
+                return res.status(200).send({ token, auth: true });
+            }
         }
 
         throw new InvalidParameter('team parameter is missing.');
@@ -63,14 +69,14 @@ export class AuthController {
 
             // Check if the token contains existing team
             if (!returnedTeam) {
-                throw new InvalidToken('Token signed with unexisting team.');
+                throw new Unauthorized('Token signed with unexisting team.');
             }
 
             req.teamId = jwtVerify.id;
 
             next();
         } catch (err) {
-            throw new InvalidToken('Invalid token provided.');
+            throw new Unauthorized('Invalid token provided.');
         }
     }
 
