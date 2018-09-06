@@ -55,7 +55,7 @@ export class OAuth2Controller {
 
         // Register the client in the authorization server
         const response = await axios.post(
-            config.authorizationServerAPI.register,
+            config.authorizationServerAPI,
             { headers: { Authorization: `Bearer ${OAuth2Controller.getToken()}`, data: clientInformation } },
         );
 
@@ -82,7 +82,7 @@ export class OAuth2Controller {
 
         // Read client information from authorization server
         const response = await axios.get(
-            `${config.authorizationServerAPI.read}/${clientId}`,
+            `${config.authorizationServerAPI}/${clientId}`,
             { headers: { Authorization: `Bearer ${clientToken}` } },
         );
 
@@ -108,7 +108,7 @@ export class OAuth2Controller {
             }
 
             const response = await axios.put(
-                config.authorizationServerAPI.update,
+                config.authorizationServerAPI,
                 { headers: { Authorization: `Bearer ${clientToken}`, data: clientInformation } },
             );
 
@@ -133,7 +133,7 @@ export class OAuth2Controller {
 
         // Delete from authorization server
         const response = await axios.delete(
-            `${config.authorizationServerAPI.delete}/${clientId}`,
+            `${config.authorizationServerAPI}/${clientId}`,
             { headers: { Authorization: `Bearer ${clientToken}` } },
         );
 
