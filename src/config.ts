@@ -9,7 +9,7 @@ export const config = {
             secret: 'CLIENT_SECRET',
         },
         auth: {
-            tokenHost: 'URL_TO_TOKEN_ENDPOINT',
+            tokenHost: 'https://localhost:3000/oauth/token',
         },
     },
 
