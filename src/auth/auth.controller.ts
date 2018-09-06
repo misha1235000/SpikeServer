@@ -27,8 +27,6 @@ export class AuthController {
             let createdTeam: ITeam;
 
             if (TeamValidator.isPasswordValid(team.password)) {
-                // Encrypting the password with bcrypt.
-                team.password = bcrypt.hashSync(team.password, 8);
 
                 // Calls the function that creates the team in mongo.
                 createdTeam = await TeamRepository.create(team);
