@@ -7,9 +7,8 @@ import { ITeam } from '../team/team.interface';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { config } from '../config';
-import { InvalidToken, Unauthorized } from './auth.error';
+import { Unauthorized } from './auth.error';
 import { InvalidParameter } from '../utils/error';
-import { InvalidPassword } from '../team/team.error';
 
 export class AuthController {
 
@@ -27,9 +26,7 @@ export class AuthController {
         if (team) {
             let createdTeam: ITeam;
 
-            if (!passwordRegex.test(team.password)) {
-                throw new InvalidPassword('Password Invalid. 8 - 50 characters, at least one letter, one number and one special character');
-            } else {
+            if (TeamValidator.isPasswordValid(team.password)) {
                 // Encrypting the password with bcrypt.
                 team.password = bcrypt.hashSync(team.password, 8);
 
@@ -87,7 +84,7 @@ export class AuthController {
      * @param res - Response
      * @param next - Next
      */
-    public static async login(req: Request, res: Response, next: NextFunction) {
+    public static async login(req: Request, res: Response) {
         const teamReturned: ITeam | null = await TeamRepository.findByTeamname(req.body.team.teamname);
 
         if (teamReturned) {
@@ -115,7 +112,7 @@ export class AuthController {
      * @param res - Response
      * @param next - NextFunction
      */
-    public static async logout(req: Request, res: Response, next: NextFunction) {
+    public static async logout(req: Request, res: Response) {
         res.status(200).send({ auth: false, token: null });
     }
 }

@@ -17,4 +17,14 @@ export class TeamValidator {
 
         throw new InvalidTeamname('Teamname Invalid. 4 - 20 characters, contains letters or numbers');
     }
+
+    static isPasswordValid(password: string): boolean {
+        const passwordRegex: RegExp = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,50}$/;
+
+        if (!passwordRegex.test(password)) {
+            throw new InvalidPassword('Password Invalid. 8 - 50 characters, at least one letter, one number and one special character');
+        } else {
+            return true;
+        }
+    }
 }
