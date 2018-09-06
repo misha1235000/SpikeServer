@@ -14,7 +14,6 @@ const TeamSchema = new Schema({
     password: {
         type: String,
         required: true,
-        validate: [TeamValidator.isPasswordValid, 'Password isn\'t valid'],
     },
 });
 
