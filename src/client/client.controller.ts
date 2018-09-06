@@ -1,27 +1,58 @@
 // client.controller
 
 import { Request, Response } from 'express';
+import { OAuth2Controller } from '../oauth2/oauth2.controller';
+import { IClientBasicInformation, IClientInformation } from '../oauth2/oauth2.parser';
 import { ClientRepository } from './client.repository';
 import { IClient } from './client.interface';
 import { InvalidParameter, NotFound } from '../utils/error';
-import { InvalidClientId } from './client.error';
 
 export class ClientController {
+
     /**
      * Creates a new client.
      * @param req - Request
      * @param res - Response
      */
     public static async create(req: Request, res: Response) {
-        const client = req.body as IClient;
 
-        if (client) {
-            const createdClient = await ClientRepository.create(client);
+        // Gets the client information required for register client in authorization server
+        const clientInformation = req.body.clientInformation as IClientBasicInformation;
+        const teamId = req.teamId;
 
-            return res.json({ client: createdClient });
+        if (clientInformation && teamId) {
+            return res.status(200).send(await OAuth2Controller.registerClient(clientInformation, teamId));
         }
 
-        throw new InvalidParameter('client parameter is missing.');
+        throw new InvalidParameter('Client information or team id parameter is missing.');
+    }
+
+    /**
+     * Reads client's full information from the authorization server.
+     * @param req - Request
+     * @param res - Response
+     */
+    public static async read(req: Request, res: Response) {
+
+        // Gets the client's id to read
+        const clientId = req.body.clientId;
+        const teamId = req.body.teamId;
+
+        if (clientId && teamId) {
+
+            // Getting the client registration token associated to the client
+            const clientDoc = await ClientRepository.findById(clientId);
+
+            // Checks if the client is unexist or client not associated to the team
+            // (we do that to avoid exposing our db to user who performs information gathering attacks)
+            if (!clientDoc || clientDoc.teamId !== teamId) {
+                throw new InvalidParameter('Client id or team id parameter is invalid');
+            }
+
+            return res.status(200).send(await OAuth2Controller.readClientInformation(clientId, clientDoc.token));
+        }
+
+        throw new InvalidParameter('Client id or team id parameter is missing.');
     }
 
     /**
@@ -52,19 +83,26 @@ export class ClientController {
      * @param res - Response
      */
     public static async update(req: Request, res: Response) {
-        const client = req.body as Partial<IClient>;
 
-        if (Object.keys(client).length > 0 && client.id) {
-            const updatedClient = await ClientRepository.update(client.id, client);
+        // Gets the client information required for register client in authorization server
+        const clientInformation = req.body.clientInformation as Partial<IClientInformation>;
+        const teamId = req.teamId;
 
-            if (!updatedClient) {
-                throw new NotFound('Client not found.');
+        if (Object.keys(clientInformation).length > 0 && clientInformation.id && teamId) {
+
+            // Getting the client registration token associated to the client
+            const clientDoc = await ClientRepository.findById(clientInformation.id);
+
+            // Checks if the client is unexist or client not associated to the team
+            // (we do that to avoid exposing our db to user who performs information gathering attacks)
+            if (!clientDoc || clientDoc.teamId !== teamId) {
+                throw new InvalidParameter('Client id or team id parameter is invalid');
             }
 
-            return res.json({ client: updatedClient });
+            return res.status(201).send(await OAuth2Controller.updateClientInformation(clientInformation, clientDoc.token));
         }
 
-        throw new InvalidClientId('Client id not provided.');
+        throw new InvalidParameter('Client id or team id is missing.');
     }
 
     /**
@@ -73,14 +111,23 @@ export class ClientController {
      * @param res - Response
      */
     public static async delete(req: Request, res: Response) {
-        const id = req.params.id;
+        const clientId = req.body.clientId;
+        const teamId = req.body.teamId;
 
-        const deletedClient = await ClientRepository.delete(id);
+        if (clientId && teamId) {
 
-        if (!deletedClient) {
-            throw new NotFound('Client not found.');
+            // Getting the client registration token associated to the client
+            const clientDoc = await ClientRepository.findById(clientId);
+
+            // Checks if the client is unexist or client not associated to the team
+            // (we do that to avoid exposing our db to user who performs information gathering attacks)
+            if (!clientDoc || clientDoc.teamId !== teamId) {
+                throw new InvalidParameter('Client id or team id parameter is invalid');
+            }
+
+            return res.status(204).send(await OAuth2Controller.deleteClient(clientId, clientDoc.token));
         }
 
-        return res.json(deletedClient);
+        throw new InvalidParameter('Client id or team id is missing.');
     }
 }
