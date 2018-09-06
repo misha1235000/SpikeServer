@@ -9,7 +9,7 @@ export const config = {
             secret: 'CLIENT_SECRET',
         },
         auth: {
-            tokenHost: 'https://localhost:3000/oauth/token',
+            tokenHost: 'https://localhost:1337/oauth/token',
         },
     },
 
@@ -24,7 +24,7 @@ export const config = {
 
     // Axios global configuration
     axios: {
-        baseURL: 'https://localhost:3000',
+        baseURL: 'https://localhost:1337',
     },
 
     secret: 'secretcode',
