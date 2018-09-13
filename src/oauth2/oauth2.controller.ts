@@ -33,14 +33,14 @@ export class OAuth2Controller {
 
                 // Check if access token expired
                 if (!OAuth2Controller.accessToken.expired()) {
-                    return OAuth2Controller.accessToken.token;
+                    return OAuth2Controller.accessToken.token.access_token;
                 }
             }
 
             // All other cases require creating new access token
             const result = await OAuth2Controller.clientCredentialsFlow();
             OAuth2Controller.accessToken = OAuth2Controller.oauth2Flow.accessToken.create(result);
-            return OAuth2Controller.accessToken.token;
+            return OAuth2Controller.accessToken.token.access_token;
         } catch (err) {
             throw err;
         }
@@ -56,7 +56,12 @@ export class OAuth2Controller {
         // Register the client in the authorization server
         const response = await axios.post(
             config.authorizationServerAPI,
-            { headers: { Authorization: `Bearer ${OAuth2Controller.getToken()}`, data: clientInformation } },
+            {
+                headers: {
+                    'Authorization-Registrer': await OAuth2Controller.getToken(),
+                    data: clientInformation,
+                },
+            },
         );
 
         // Client registers successfully
@@ -83,7 +88,12 @@ export class OAuth2Controller {
         // Read client information from authorization server
         const response = await axios.get(
             `${config.authorizationServerAPI}/${clientId}`,
-            { headers: { Authorization: `Bearer ${clientToken}` } },
+            {
+                headers: {
+                    'Authorization-Registrer': await OAuth2Controller.getToken(),
+                    Authorization: clientToken,
+                },
+            },
         );
 
         return OAuth2Parser.parseResponse(response);
@@ -109,7 +119,13 @@ export class OAuth2Controller {
 
             const response = await axios.put(
                 config.authorizationServerAPI,
-                { headers: { Authorization: `Bearer ${clientToken}`, data: clientInformation } },
+                {
+                    headers: {
+                        'Authorization-Registrer': await OAuth2Controller.getToken(),
+                        Authorization: clientToken,
+                    },
+                    data: clientInformation,
+                },
             );
 
             return OAuth2Parser.parseResponse(response);
@@ -134,7 +150,12 @@ export class OAuth2Controller {
         // Delete from authorization server
         const response = await axios.delete(
             `${config.authorizationServerAPI}/${clientId}`,
-            { headers: { Authorization: `Bearer ${clientToken}` } },
+            {
+                headers: {
+                    'Authorization-Registrer': await OAuth2Controller.getToken(),
+                    Authorization: clientToken,
+                },
+            },
         );
 
         return OAuth2Parser.parseResponse(response);
