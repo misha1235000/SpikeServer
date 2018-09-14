@@ -17,6 +17,7 @@ export interface IClientInformation extends IClientBasicInformation {
     registrationToken: string;
 }
 
+// TODO: Proper implement parseResponse without strange return type
 export class OAuth2Parser {
 
     /**
@@ -27,14 +28,15 @@ export class OAuth2Parser {
 
         switch (response.status) {
 
-        // Data received - Read requests
+        // Data received - Read/Create requests
         // TODO: Maybe add more parsing in future
         case 200:
+        case 201:
             return response.data as IClientInformation;
 
         // Response OK without data - Delete requests
         case 204:
-            return 'Client deleted successfully';
+            return true;
 
         // When 401 Unauthorized received, means the client doesn't exists.
         case 401:

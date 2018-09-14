@@ -43,7 +43,7 @@ mongoose.connect('mongodb://devdb:Aa123456@ds125472.mlab.com:25472/teamdb').then
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api/auth', new AuthRouter().router);
-// app.use(Wrapper.wrapAsync(AuthController.authorize)); // The authorize middleware.
+app.use(Wrapper.wrapAsync(AuthController.authorize)); // The authorize middleware.
 app.use('/api/client', new ClientRouter().router);
 app.use('/api/team', new TeamRouter().router);
 
