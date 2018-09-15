@@ -4,7 +4,8 @@ import { Request, Response, NextFunction } from 'express';
 import { BaseError } from './error';
 import { MongoError } from 'mongodb';
 
-export function errorHandler(error: Error, req: Request, res: Response, next: NextFunction) {
+// TODO: Change error type from any
+export function errorHandler(error: any, req: Request, res: Response, next: NextFunction) {
     if (error instanceof BaseError) {
         return res.status(error.status).send({ message: error.message });
     }
@@ -17,6 +18,12 @@ export function errorHandler(error: Error, req: Request, res: Response, next: Ne
         if (error.code === 11000) {
             return res.status(400).send({ message: 'Duplicate Error. Team already exists.' });
         }
+    }
+
+    // If error received from authorization server
+    // TODO: Need to improve that error checking
+    if (error.response) {
+        return res.status(error.response.status).send(error.response.data);
     }
 
     return res.status(500).send({ message: error.message });

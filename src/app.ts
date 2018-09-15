@@ -18,6 +18,9 @@ const app = express();
 // Axios global configuration
 axios.defaults.baseURL = config.axios.baseURL;
 
+// TODO: Change that on production to validate https certificates
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 // CORS
 const options:cors.CorsOptions = {
     allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'X-Access-Token', 'authorization'],

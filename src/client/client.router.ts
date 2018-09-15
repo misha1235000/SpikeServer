@@ -8,9 +8,10 @@ export class ClientRouter {
     get router() {
         const router: Router = Router();
         router.get('/', Wrapper.wrapAsync(ClientController.findByToken));
-        router.put('/', Wrapper.wrapAsync(ClientController.update));
+        router.get('/:clientId', Wrapper.wrapAsync(ClientController.read));
+        router.put('/:clientId', Wrapper.wrapAsync(ClientController.update));
         router.post('/', Wrapper.wrapAsync(ClientController.create));
-        router.delete('/:id', Wrapper.wrapAsync(ClientController.delete));
+        router.delete('/:clientId', Wrapper.wrapAsync(ClientController.delete));
 
         return router;
     }

@@ -33,14 +33,14 @@ export class OAuth2Controller {
 
                 // Check if access token expired
                 if (!OAuth2Controller.accessToken.expired()) {
-                    return OAuth2Controller.accessToken.token;
+                    return OAuth2Controller.accessToken.token.access_token;
                 }
             }
 
             // All other cases require creating new access token
             const result = await OAuth2Controller.clientCredentialsFlow();
             OAuth2Controller.accessToken = OAuth2Controller.oauth2Flow.accessToken.create(result);
-            return OAuth2Controller.accessToken.token;
+            return OAuth2Controller.accessToken.token.access_token;
         } catch (err) {
             throw err;
         }
@@ -56,11 +56,12 @@ export class OAuth2Controller {
         // Register the client in the authorization server
         const response = await axios.post(
             config.authorizationServerAPI,
-            { headers: { Authorization: `Bearer ${OAuth2Controller.getToken()}`, data: clientInformation } },
+            { clientInformation },
+            { headers: { 'Authorization-Registrer': await OAuth2Controller.getToken() } },
         );
 
         // Client registers successfully
-        if (response.status === 200) {
+        if (response.status === 201) {
 
             const createdClient = await ClientRepository.create({
                 teamId,
@@ -83,7 +84,12 @@ export class OAuth2Controller {
         // Read client information from authorization server
         const response = await axios.get(
             `${config.authorizationServerAPI}/${clientId}`,
-            { headers: { Authorization: `Bearer ${clientToken}` } },
+            {
+                headers: {
+                    'Authorization-Registrer': await OAuth2Controller.getToken(),
+                    Authorization: clientToken,
+                },
+            },
         );
 
         return OAuth2Parser.parseResponse(response);
@@ -91,37 +97,46 @@ export class OAuth2Controller {
 
     /**
      * Updates client information in authorization server
-     *
+     * @param clientId - Client id of the client to update
      * @param clientInformation - Client information to update
      * @param clientToken - Client token for managing the client
      */
-    static async updateClientInformation(clientInformation: Partial<IClientInformation>, clientToken: string) {
+    static async updateClientInformation(clientId: string,
+                                         clientInformation: Partial<IClientBasicInformation>,
+                                         clientToken: string) {
 
         // Checks if included client id
-        if (clientInformation.id) {
+        if (clientId) {
+
+            const response = await axios.put(
+                `${config.authorizationServerAPI}/${clientId}`,
+                { clientInformation },
+                {
+                    headers: {
+                        'Authorization-Registrer': await OAuth2Controller.getToken(),
+                        Authorization: clientToken,
+                    },
+                },
+            );
 
             // Update the client metadata in client model
             const updatedClient =
-                await ClientRepository.update(clientInformation.id, OAuth2Parser.parseClientInfoToModel(clientInformation));
+                await ClientRepository.update(clientId, OAuth2Parser.parseClientInfoToModel(clientInformation));
             if (!updatedClient) {
                 throw new NotFound('Client not exists.');
             }
 
-            const response = await axios.put(
-                config.authorizationServerAPI,
-                { headers: { Authorization: `Bearer ${clientToken}`, data: clientInformation } },
-            );
-
             return OAuth2Parser.parseResponse(response);
         }
 
-        throw new InvalidClientInformation('client id parameters is missing');
+        throw new InvalidClientInformation('Client id parameter is missing');
     }
 
     /**
      * Deletes client from the authorization server
      * @param clientId - Client id of the client to delete
      * @param clientToken - Client token for managing the client
+     * @returns Boolean indicates if the client deleted otherwise throws error
      */
     static async deleteClient(clientId: string, clientToken: string) {
 
@@ -134,7 +149,12 @@ export class OAuth2Controller {
         // Delete from authorization server
         const response = await axios.delete(
             `${config.authorizationServerAPI}/${clientId}`,
-            { headers: { Authorization: `Bearer ${clientToken}` } },
+            {
+                headers: {
+                    'Authorization-Registrer': await OAuth2Controller.getToken(),
+                    Authorization: clientToken,
+                },
+            },
         );
 
         return OAuth2Parser.parseResponse(response);

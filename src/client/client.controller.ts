@@ -35,8 +35,8 @@ export class ClientController {
     public static async read(req: Request, res: Response) {
 
         // Gets the client's id to read
-        const clientId = req.body.clientId;
-        const teamId = req.body.teamId;
+        const clientId = req.params.clientId;
+        const teamId = req.teamId;
 
         if (clientId && teamId) {
 
@@ -85,13 +85,14 @@ export class ClientController {
     public static async update(req: Request, res: Response) {
 
         // Gets the client information required for register client in authorization server
-        const clientInformation = req.body.clientInformation as Partial<IClientInformation>;
+        const clientInformation = req.body.clientInformation as Partial<IClientBasicInformation>;
+        const clientId = req.params.clientId;
         const teamId = req.teamId;
 
-        if (Object.keys(clientInformation).length > 0 && clientInformation.id && teamId) {
+        if (Object.keys(clientInformation).length > 0 && clientId && teamId) {
 
             // Getting the client registration token associated to the client
-            const clientDoc = await ClientRepository.findById(clientInformation.id);
+            const clientDoc = await ClientRepository.findById(clientId);
 
             // Checks if the client is unexist or client not associated to the team
             // (we do that to avoid exposing our db to user who performs information gathering attacks)
@@ -99,10 +100,13 @@ export class ClientController {
                 throw new InvalidParameter('Client id or team id parameter is invalid');
             }
 
-            return res.status(201).send(await OAuth2Controller.updateClientInformation(clientInformation, clientDoc.token));
+            const updatedClient = await OAuth2Controller.updateClientInformation(clientId,
+                                                                                 clientInformation,
+                                                                                 clientDoc.token);
+            return res.status(200).send(updatedClient);
         }
 
-        throw new InvalidParameter('Client id or team id is missing.');
+        throw new InvalidParameter('Client information or client id or team id is missing.');
     }
 
     /**
@@ -111,7 +115,7 @@ export class ClientController {
      * @param res - Response
      */
     public static async delete(req: Request, res: Response) {
-        const clientId = req.body.clientId;
+        const clientId = req.params.clientId;
         const teamId = req.body.teamId;
 
         if (clientId && teamId) {
@@ -125,7 +129,9 @@ export class ClientController {
                 throw new InvalidParameter('Client id or team id parameter is invalid');
             }
 
-            return res.status(204).send(await OAuth2Controller.deleteClient(clientId, clientDoc.token));
+            await OAuth2Controller.deleteClient(clientId, clientDoc.token);
+
+            return res.sendStatus(204);
         }
 
         throw new InvalidParameter('Client id or team id is missing.');
