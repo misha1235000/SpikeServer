@@ -18,7 +18,6 @@ const ClientSchema = new Schema({
     },
     teamId: {
         type: String,
-        unique: true,
         ref: 'Team',
         required: true,
         validate: {
