@@ -3,11 +3,10 @@
 import { AxiosResponse } from 'axios';
 import { NotFound, InternalServerError } from '../utils/error';
 import { Forbidden } from '../auth/auth.error';
-import { IClient } from '../client/client.interface';
 
 export interface IClientBasicInformation {
     name: string;
-    redirectUris: [string];
+    redirectUris: string[];
     hostUri: string;
 }
 
@@ -60,13 +59,11 @@ export class OAuth2Parser {
      * TODO: Add correct type instead any
      */
     static parseClientInfoToModel(clientInformation: Partial<IClientInformation>) : any {
-
         return {
             ...(clientInformation.id ? { clientId: clientInformation.id } : {}),
             ...(clientInformation.name ? { name: clientInformation.name } : {}),
-            ...(clientInformation.hostUri ? { hostname: clientInformation.hostUri } : {}),
+            ...(clientInformation.hostUri ? { hostUri: clientInformation.hostUri } : {}),
             ...(clientInformation.registrationToken ? { token: clientInformation.registrationToken } : {}),
         };
     }
-
 }
