@@ -40,4 +40,13 @@ const ClientSchema = new Schema({
     },
 });
 
+ClientSchema.methods.toJSON = function () {
+    const obj = this.toObject();
+    delete obj._id;
+    delete obj.__v;
+    delete obj.token;
+    delete obj.teamId;
+    return obj;
+};
+
 export const ClientModel = model<IClient>('Client', ClientSchema);

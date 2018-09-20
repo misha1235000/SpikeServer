@@ -75,7 +75,7 @@ export class OAuth2Parser {
     private static parseClientFullInfo(clientInformation: IClientInformation) {
         return {
             redirectUris: clientInformation.redirectUris,
-            secert: clientInformation.secret,
+            secret: clientInformation.secret,
             ...OAuth2Parser.parseClientInfoToModel(clientInformation),
         };
     }
