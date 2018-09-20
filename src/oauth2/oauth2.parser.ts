@@ -31,7 +31,7 @@ export class OAuth2Parser {
         // TODO: Maybe add more parsing in future
         case 200:
         case 201:
-            return response.data as IClientInformation;
+            return OAuth2Parser.parseClientFullInfo(response.data);
 
         // Response OK without data - Delete requests
         case 204:
@@ -64,6 +64,19 @@ export class OAuth2Parser {
             ...(clientInformation.name ? { name: clientInformation.name } : {}),
             ...(clientInformation.hostUri ? { hostUri: clientInformation.hostUri } : {}),
             ...(clientInformation.registrationToken ? { token: clientInformation.registrationToken } : {}),
+        };
+    }
+
+    /**
+     * Parses client information to readable information to web client
+     * @param clientInformation - Whole client information to parse to readable information to web client
+     * @returns Client information in readable format for the web client
+     */
+    private static parseClientFullInfo(clientInformation: IClientInformation) {
+        return {
+            redirectUris: clientInformation.redirectUris,
+            secert: clientInformation.secret,
+            ...OAuth2Parser.parseClientInfoToModel(clientInformation),
         };
     }
 }
