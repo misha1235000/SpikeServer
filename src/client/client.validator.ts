@@ -12,7 +12,7 @@ export class ClientValidator {
                        ClientValidator.isTokenValid(client.token) &&
                        ClientValidator.isTeamIdValid(client.teamId) &&
                        ClientValidator.isNameValid(client.name) &&
-                       ClientValidator.isHostnameValid(client.hostname);
+                       ClientValidator.isHostnameValid(client.hostUri);
     }
 
     static isClientIdValid(clientId: string): boolean {
