@@ -116,7 +116,7 @@ export class ClientController {
      */
     public static async delete(req: Request, res: Response) {
         const clientId = req.params.clientId;
-        const teamId = req.body.teamId;
+        const teamId = req.teamId;
 
         if (clientId && teamId) {
 
