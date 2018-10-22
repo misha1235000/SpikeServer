@@ -18,6 +18,7 @@ export const config = {
     tokenConfig: {
         scope: 'client_manager_special_scope', // Should include the special scope for register and
                                                // Manage other clients.
+        audience: 'https://localhost:1337',    // Mention the audience of the access token (authorization server)
     },
 
     // Authorization server endpoints configurations
