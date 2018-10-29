@@ -53,6 +53,6 @@ export class ClientRepository {
      * @param clientId - The ID of the client that needs to be removed.
      */
     public static delete(clientId: string): DocumentQuery<IClient | null, IClient> {
-        return ClientModel.findOneAndRemove(clientId);
+        return ClientModel.findOneAndRemove({ clientId });
     }
 }
