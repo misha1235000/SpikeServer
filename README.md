@@ -1,4 +1,4 @@
-# serverRegisterServer
+# Spike Server
 > Server side of the servers registration client.
 > Its job is to communicate with the authorization-server and to manage client with the authorization-server.
 
