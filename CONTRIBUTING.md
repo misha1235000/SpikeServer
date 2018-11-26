@@ -1,4 +1,4 @@
-# Contributing to serverregisterserver
+# Contributing to Spike Server
 
 First and foremost, thank you! We appreciate that you want to contribute to serverregisterserver, your time is valuable, and your contributions mean a lot to us.
 
