@@ -3,6 +3,7 @@
 import * as mongoose from 'mongoose';
 import * as chai from 'chai';
 import { TeamRepository } from './team.repository';
+import { ITeam } from './team.interface';
 
 const expect = chai.expect;
 
@@ -232,9 +233,51 @@ describe('Team Repository Tests', () => {
     });
 
     describe('update()', () => {
+        let createdTeam: any;
+
         beforeEach(async () => {
             const teamObject: any = { teamname: 'TestTeamRepo', password: 'Test123!' };
-            await TeamRepository.create(teamObject);
+            createdTeam = await TeamRepository.create(teamObject);
+        });
+
+        it('Should update team name successfully', async () => {
+            createdTeam.teamname = 'TestTeamUpdated';
+            await TeamRepository.update(createdTeam.id, createdTeam);
+
+            const foundTeam: any = await TeamRepository.findById(createdTeam.id);
+            expect(foundTeam).to.have.property('teamname');
+            expect(foundTeam.teamname).to.equal('TestTeamUpdated');
+        });
+
+        it('Should return cast error on empty object id', async () => {
+            try {
+                createdTeam.teamname = 'TestTeamUpdated';
+                await TeamRepository.update('', createdTeam);
+            } catch (error) {
+                expect(error).to.have.property('name');
+                expect(error.name).to.equal('CastError');
+                expect(error).to.have.property('kind');
+                expect(error.kind).to.equal('ObjectId');
+            }
+        });
+
+        it('Should return null on team not found to update', async () => {
+            createdTeam.teamname = 'TestTeamUpdated';
+            const updatedTeam = await TeamRepository.update(mongoose.Types.ObjectId().toHexString(), createdTeam);
+            expect(updatedTeam).to.be.null;
+        });
+
+        it('Should return teamname not valid error', async () => {
+            createdTeam.teamname = '';
+
+            try {
+                await TeamRepository.update(createdTeam.id, createdTeam);
+            } catch (error) {
+                expect(error).to.have.property('name');
+                expect(error).to.have.property('errors');
+                expect(error.name).to.equal('ValidationError');
+                expect(error.errors).to.have.property('teamname');
+            }
         });
     });
 });
