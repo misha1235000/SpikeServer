@@ -26,11 +26,12 @@ export class TeamRepository {
      * Creates a new team.
      * @param team - The team to create.
      */
-    public static create(team: ITeam): Promise<ITeam> {
+    public static async create(team: ITeam): Promise<ITeam> {
         try {
-            return TeamModel.create(team);
+            const createdTeam = await TeamModel.create(team);
+            return createdTeam;
         } catch (error) {
-            if (error.code && error.code === '11000') {
+            if (error.code && error.code === 11000) {
                 throw new DuplicateUnique('Team name already exists.');
             } else {
                 throw error;
