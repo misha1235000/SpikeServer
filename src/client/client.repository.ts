@@ -27,11 +27,12 @@ export class ClientRepository {
      * Creates a new client.
      * @param client - The client to create
      */
-    public static create(client: IClient): Promise<IClient> {
+    public static async create(client: IClient): Promise<IClient> {
         try {
-            return ClientModel.create(client);
+            const createdClient = ClientModel.create(client);
+            return createdClient;
         } catch (error) {
-            if (error.code && error.code === '11000') {
+            if (error.code && error.code === 11000) {
                 throw new DuplicateUnique('client uniques already exists.');
             } else {
                 throw error;
