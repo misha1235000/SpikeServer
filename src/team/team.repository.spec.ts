@@ -28,10 +28,9 @@ describe('Team Repository Tests', () => {
             try {
                 const createdTeam = await TeamRepository.create(teamObject);
             } catch (error) {
-                expect(error).to.have.property('name');
+                expect(error).to.have.property('name', 'ValidationError');
                 expect(error).to.have.property('errors');
                 expect(error.errors).to.have.property('teamname');
-                expect(error.name).to.equal('ValidationError');
             }
         });
 
@@ -41,9 +40,8 @@ describe('Team Repository Tests', () => {
             try {
                 const createdTeam = await TeamRepository.create(teamObject);
             } catch (error) {
-                expect(error).to.have.property('name');
+                expect(error).to.have.property('name', 'ValidationError');
                 expect(error).to.have.property('errors');
-                expect(error.name).to.equal('ValidationError');
                 expect(error.errors).to.have.property('password');
             }
         });
@@ -54,9 +52,8 @@ describe('Team Repository Tests', () => {
             try {
                 const createdTeam = await TeamRepository.create(teamObject);
             } catch (error) {
-                expect(error).to.have.property('name');
+                expect(error).to.have.property('name', 'ValidationError');
                 expect(error).to.have.property('errors');
-                expect(error.name).to.equal('ValidationError');
                 expect(error.errors).to.have.property('teamname');
                 expect(error.errors).to.have.property('password');
             }
@@ -67,21 +64,19 @@ describe('Team Repository Tests', () => {
 
             const createdTeam = await TeamRepository.create(teamObject);
             expect(createdTeam).to.have.property('id');
-            expect(createdTeam).to.have.property('teamname');
-            expect(createdTeam.teamname).to.equal('TestTeamRepo');
+            expect(createdTeam).to.have.property('teamname', 'TestTeamRepo');
             expect(createdTeam.password).to.not.equal('Test123!');
         });
 
         it('Should return duplicate error', async () => {
             const teamObject: any = { teamname: 'TestTeamRepo', password: 'Test123!' };
 
-            const createdTeam = await TeamRepository.create(teamObject);
+            await TeamRepository.create(teamObject);
 
             try {
-                const dupCreatedTeam = await TeamRepository.create(teamObject);
+                await TeamRepository.create(teamObject);
             } catch (error) {
-                expect(error).to.have.property('name');
-                expect(error.name).to.equal('DuplicateUnique');
+                expect(error).to.have.property('name', 'DuplicateUnique');
             }
         });
     });
@@ -95,10 +90,8 @@ describe('Team Repository Tests', () => {
 
             const foundTeam: any = await TeamRepository.findById(createdTeam.id);
 
-            expect(foundTeam).to.have.property('id');
-            expect(foundTeam.id).to.equal(createdTeam.id);
-            expect(foundTeam).to.have.property('teamname');
-            expect(foundTeam.teamname).to.equal('TestTeamRepo');
+            expect(foundTeam).to.have.property('id', createdTeam.id);
+            expect(foundTeam).to.have.property('teamname', 'TestTeamRepo');
         });
 
         it('Should return null and not find anything', async () => {
@@ -115,10 +108,8 @@ describe('Team Repository Tests', () => {
             try {
                 await TeamRepository.findById('invalidobjectidtest');
             } catch (error) {
-                expect(error).to.have.property('name');
-                expect(error.name).to.equal('CastError');
-                expect(error).to.have.property('kind');
-                expect(error.kind).to.equal('ObjectId');
+                expect(error).to.have.property('name', 'CastError');
+                expect(error).to.have.property('kind', 'ObjectId');
             }
         });
 
@@ -131,10 +122,8 @@ describe('Team Repository Tests', () => {
             try {
                 await TeamRepository.findById('');
             } catch (error) {
-                expect(error).to.have.property('name');
-                expect(error.name).to.equal('CastError');
-                expect(error).to.have.property('kind');
-                expect(error.kind).to.equal('ObjectId');
+                expect(error).to.have.property('name', 'CastError');
+                expect(error).to.have.property('kind', 'ObjectId');
             }
         });
     });
@@ -149,8 +138,7 @@ describe('Team Repository Tests', () => {
 
             const foundTeam: any = await TeamRepository.findByTeamname(createdTeam.teamname);
 
-            expect(foundTeam).to.have.property('teamname');
-            expect(foundTeam.teamname).to.equal(createdTeam.teamname);
+            expect(foundTeam).to.have.property('teamname', createdTeam.teamname);
             expect(foundTeam.teamname).to.equal('TestTeamRepo');
         });
 
@@ -203,10 +191,8 @@ describe('Team Repository Tests', () => {
             try {
                 await TeamRepository.delete('');
             } catch (error) {
-                expect(error).to.have.property('name');
-                expect(error.name).to.equal('CastError');
-                expect(error).to.have.property('kind');
-                expect(error.kind).to.equal('ObjectId');
+                expect(error).to.have.property('name', 'CastError');
+                expect(error).to.have.property('kind', 'ObjectId');
             }
         });
 
@@ -219,15 +205,14 @@ describe('Team Repository Tests', () => {
             try {
                 await TeamRepository.delete('badcastobjectidtest');
             } catch (error) {
-                expect(error).to.have.property('name');
-                expect(error.name).to.equal('CastError');
-                expect(error).to.have.property('kind');
-                expect(error.kind).to.equal('ObjectId');
+                expect(error).to.have.property('name', 'CastError');
+                expect(error).to.have.property('kind', 'ObjectId');
             }
         });
 
         it('Should not delete anything (not existing objectid)', async () => {
             const foundTeam: any = await TeamRepository.findById(mongoose.Types.ObjectId().toHexString());
+
             expect(foundTeam).to.be.null;
         });
     });
@@ -245,8 +230,8 @@ describe('Team Repository Tests', () => {
             await TeamRepository.update(createdTeam.id, createdTeam);
 
             const foundTeam: any = await TeamRepository.findById(createdTeam.id);
-            expect(foundTeam).to.have.property('teamname');
-            expect(foundTeam.teamname).to.equal('TestTeamUpdated');
+
+            expect(foundTeam).to.have.property('teamname', 'TestTeamUpdated');
         });
 
         it('Should return cast error on empty object id', async () => {
@@ -254,16 +239,16 @@ describe('Team Repository Tests', () => {
                 createdTeam.teamname = 'TestTeamUpdated';
                 await TeamRepository.update('', createdTeam);
             } catch (error) {
-                expect(error).to.have.property('name');
-                expect(error.name).to.equal('CastError');
-                expect(error).to.have.property('kind');
-                expect(error.kind).to.equal('ObjectId');
+                expect(error).to.have.property('name', 'CastError');
+                expect(error).to.have.property('kind', 'ObjectId');
             }
         });
 
         it('Should return null on team not found to update', async () => {
             createdTeam.teamname = 'TestTeamUpdated';
+
             const updatedTeam = await TeamRepository.update(mongoose.Types.ObjectId().toHexString(), createdTeam);
+
             expect(updatedTeam).to.be.null;
         });
 
@@ -273,9 +258,8 @@ describe('Team Repository Tests', () => {
             try {
                 await TeamRepository.update(createdTeam.id, createdTeam);
             } catch (error) {
-                expect(error).to.have.property('name');
+                expect(error).to.have.property('name', 'ValidationError');
                 expect(error).to.have.property('errors');
-                expect(error.name).to.equal('ValidationError');
                 expect(error.errors).to.have.property('teamname');
             }
         });
