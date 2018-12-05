@@ -6,7 +6,7 @@
   "scripts": {
     "start": "tsc && set NODE_ENV=production&& node ./dist/server.js",
     "test-env": "tsc && set NODE_ENV=test",
-    "test": "npm run test-env&& mocha --recursive dist/**/*.spec.js --exit",
+    "test": "npm run test-env&& mocha --recursive dist/**/*.spec.js --timeout 20000 --exit",
     "validation-test": "npm run test-env&& mocha --recursive 'dist/**/*.validator.spec.js' --exit",
     "integration-test": "npm run test-env&& mocha --recursive 'dist/**/*.router.spec.js' --exit",
     "tslint": "tslint -c tslint.json -p tsconfig.json"
