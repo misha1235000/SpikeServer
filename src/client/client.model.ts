@@ -30,13 +30,13 @@ const ClientSchema = new Schema({
         type: String,
         unique: true,
         required: true,
-        validate: [ClientValidator.isClientIdValid, 'Hostname isn\'t valid'],
+        validate: [ClientValidator.isHostnameValid, 'Hostname isn\'t valid'],
     },
     token: {
         type: String,
         unique: true,
         required: true,
-        validate: [ClientValidator.isClientIdValid, 'Token isn\'t valid'],
+        validate: [ClientValidator.isTokenValid, 'Token isn\'t valid'],
     },
 });
 
