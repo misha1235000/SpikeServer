@@ -391,10 +391,39 @@ describe('Client Repository Tests', () => {
         });
     });
 
-    describe('delete()', () => {/*
-        it('Should delete client succeessfully', async () => {
-            //
-        });*/
-    });
+    describe('delete()', () => {
+        let createdClient: any;
 
+        beforeEach(async () => {
+            const clientObject: any = {
+                name: 'RealTeam',
+                clientId: 'someclientidhere',
+                teamId: createdTeam.id,
+                hostUri: 'https://testclientidhere.com',
+                token: 'sometokenhere',
+            };
+
+            createdClient = await ClientRepository.create(clientObject);
+        });
+
+        it('Should delete client succeessfully', async () => {
+            await ClientRepository.delete(createdClient.clientId);
+
+            const foundDeletedClient = await ClientRepository.findById(createdClient.clientId);
+
+            expect(foundDeletedClient).to.be.null;
+        });
+
+        it('Should not delete anything (Not Existing ClientId)', async () => {
+            const deletedClient = await ClientRepository.delete('notexistingclientid');
+
+            expect(deletedClient).to.be.null;
+        });
+
+        it('Should not delete anything (Empty ClientId)', async () => {
+            const deletedClient = await ClientRepository.delete('');
+
+            expect(deletedClient).to.be.null;
+        });
+    });
 });
