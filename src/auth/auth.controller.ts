@@ -32,7 +32,7 @@ export class AuthController {
                 createdTeam = await TeamRepository.create(team);
 
                 // Sign the JWT token for a specified period of time (In seconds).
-                const token = jwt.sign({ id: createdTeam._id }, config.secret, {
+                const token = jwt.sign({ id: createdTeam._id }, config.secret as string, {
                     expiresIn: 600,
                 });
 
@@ -59,7 +59,7 @@ export class AuthController {
 
         try {
             // Check if the token is valid and use the token's ID to find the specified team.
-            const jwtVerify: any = await jwt.verify(token, config.secret); // TODO; Make an interface for decoded jwt.
+            const jwtVerify: any = await jwt.verify(token, config.secret as string); // TODO; Make an interface for decoded jwt.
             const returnedTeam: ITeam | null = await TeamRepository.findById(jwtVerify.id);
 
             // Check if the token contains existing team
@@ -94,7 +94,7 @@ export class AuthController {
             }
 
             // Generate a JWT token.
-            const token = jwt.sign({ id: teamReturned._id }, config.secret, { expiresIn: 600 });
+            const token = jwt.sign({ id: teamReturned._id }, config.secret as string, { expiresIn: 600 });
 
             return res.status(200).send({ token, auth: true });
         }

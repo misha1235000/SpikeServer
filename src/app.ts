@@ -34,6 +34,7 @@ app.use(cors(options));
 app.options('*', cors(options));
 
 // The connection to the mongodb.
+console.log(config.prodDatabaseUrl);
 mongoose.connect(config.prodDatabaseUrl, { useNewUrlParser: true }).then(() => {
     console.log('Connected to mongo');
 }).catch((error) => {

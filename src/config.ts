@@ -1,10 +1,8 @@
 // config
-import * as dotenv from 'dotenv';
-dotenv.config();
 
 export const config = {
     // Database URLs
-    prodDatabaseUrl: `mongodb://${process.env.DB_PROD_USER}:${process.env.DB_PROD_PASS}@ds123584.mlab.com:23584/${process.env.DB_PROD_NAME}`,
+    prodDatabaseUrl: `mongodb://${process.env.DB_PROD_USER}:${process.env.DB_PROD_PASS}@ds125472.mlab.com:25472/${process.env.DB_PROD_NAME}`,
     testDatabaseUrl: `mongodb://${process.env.DB_TEST_USER}:${process.env.DB_TEST_PASS}@ds123584.mlab.com:23584/${process.env.DB_TEST_NAME}`,
 
     // Client Credentials flow configuration for OAuth2
