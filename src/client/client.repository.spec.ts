@@ -4,14 +4,14 @@ import * as mongoose from 'mongoose';
 import * as chai from 'chai';
 import { TeamRepository } from '../team/team.repository';
 import { ClientRepository } from './client.repository';
-
+import { config } from '../config';
 const expect = chai.expect;
 
 describe('Client Repository Tests', () => {
     let createdTeam: any;
 
     before(async () => {
-        await mongoose.connect('mongodb://test:test123@ds123584.mlab.com:23584/spikeservertest', { useNewUrlParser: true });
+        await mongoose.connect(config.testDatabaseUrl, { useNewUrlParser: true });
         if (mongoose.connection.collections.teams) {
             await mongoose.connection.collections.teams.remove({});
         }
