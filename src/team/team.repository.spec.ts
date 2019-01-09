@@ -4,12 +4,13 @@ import * as mongoose from 'mongoose';
 import * as chai from 'chai';
 import { TeamRepository } from './team.repository';
 import { ITeam } from './team.interface';
+import { config } from '../config';
 
 const expect = chai.expect;
 
 describe('Team Repository Tests', () => {
     before(async () => {
-        await mongoose.connect('mongodb://test:test123@ds123584.mlab.com:23584/spikeservertest', { useNewUrlParser: true });
+        await mongoose.connect(config.testDatabaseUrl, { useNewUrlParser: true });
         if (mongoose.connection.collections.teams) {
             await mongoose.connection.collections.teams.remove({});
         }

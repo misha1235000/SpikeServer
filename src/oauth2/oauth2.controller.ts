@@ -13,7 +13,7 @@ import { InvalidClientInformation } from './oauth2.error';
 export class OAuth2Controller {
 
     // OAuth2 configured root flow with Client Credentials options
-    static oauth2Flow = create(config.clientCredentials);
+    static oauth2Flow = create(config.clientCredentials as any);
 
     // Client Credentials flow shirnked to easy callable function which returns access token which
     // Should be wrapped via accessToken.create for parsing the response from the authorization server

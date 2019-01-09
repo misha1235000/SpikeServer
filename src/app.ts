@@ -34,7 +34,7 @@ app.use(cors(options));
 app.options('*', cors(options));
 
 // The connection to the mongodb.
-mongoose.connect('mongodb://devdb:Aa123456@ds125472.mlab.com:25472/teamdb', { useNewUrlParser: true }).then(() => {
+mongoose.connect(config.prodDatabaseUrl, { useNewUrlParser: true }).then(() => {
     console.log('Connected to mongo');
 }).catch((error) => {
     console.log('Error connecting to mongo');
