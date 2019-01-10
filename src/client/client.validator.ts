@@ -51,7 +51,7 @@ export class ClientValidator {
         throw new InvalidName('Client Name Invalid. 4 - 30 characters, contains letters or numbers');
     }
     static isHostnameValid(hostname: string): boolean {
-        const hostnameRegex = /^https:\/\/(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/m;
+        const hostnameRegex = /^(https:\/\/([A-Za-z0-9\._\-]+)([A-Za-z0-9]+))(:[1-9][0-9]{0,3}|:[1-5][0-9]{4}|:6[0-4][0-9]{3}|:65[0-4][0-9]{2}|:655[0-2][0-9]|:6553[0-5])?$/;
 
         if (hostnameRegex.test(hostname)) {
             return true;
