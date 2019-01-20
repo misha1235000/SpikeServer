@@ -1,7 +1,7 @@
 // oauth2.parser
 
 import { AxiosResponse } from 'axios';
-import { NotFound, InternalServerError } from '../utils/error';
+import { NotFound, InternalServerError, InvalidParameter } from '../utils/error';
 import { Forbidden } from '../auth/auth.error';
 
 export interface IClientBasicInformation {
@@ -37,6 +37,10 @@ export class OAuth2Parser {
         case 204:
             return true;
 
+        // Invalid request or registration error
+        case 400:
+            throw new InvalidParameter(response.data ? response.data.message : 'Invalid request occurred');
+
         // When 401 Unauthorized received, means the client doesn't exists.
         case 401:
             throw new NotFound('Client not exists.');
@@ -47,7 +51,7 @@ export class OAuth2Parser {
 
         // Unknown error occurred
         default:
-            throw new InternalServerError('Unexpected behaviour noticed');
+            throw new InternalServerError(response.data || 'Unexpected behaviour noticed');
         }
     }
 
