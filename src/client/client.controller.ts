@@ -2,7 +2,7 @@
 
 import { Request, Response } from 'express';
 import { OAuth2Controller } from '../oauth2/oauth2.controller';
-import { IClientBasicInformation, IClientInformation } from '../oauth2/oauth2.parser';
+import { IClientBasicInformation, IClientInformation, OAuth2Parser } from '../oauth2/oauth2.parser';
 import { ClientRepository } from './client.repository';
 import { IClient } from './client.interface';
 import { InvalidParameter, NotFound } from '../utils/error';
@@ -21,7 +21,14 @@ export class ClientController {
         const teamId = req.teamId;
 
         if (clientInformation && teamId) {
-            return res.status(200).send(await OAuth2Controller.registerClient(clientInformation, teamId));
+
+            // Creates the client in OSpike first
+            const registeredClient = await OAuth2Controller.registerClient(clientInformation, teamId);
+
+            // Creates the client in our db
+            await ClientRepository.create({ teamId, ...OAuth2Parser.parseClientInfoToModel(registeredClient) });
+
+            return res.status(200).send(registeredClient);
         }
 
         throw new InvalidParameter('Client information or team id parameter is missing.');
@@ -103,6 +110,9 @@ export class ClientController {
             const updatedClient = await OAuth2Controller.updateClientInformation(clientId,
                                                                                  clientInformation,
                                                                                  clientDoc.token);
+            // Update the client metadata in client model
+            await clientDoc.update(OAuth2Parser.parseClientInfoToModel(updatedClient));
+
             return res.status(200).send(updatedClient);
         }
 
@@ -129,7 +139,11 @@ export class ClientController {
                 throw new InvalidParameter('Client id or team id parameter is invalid');
             }
 
+            // First delete the client from OSpike
             await OAuth2Controller.deleteClient(clientId, clientDoc.token);
+
+            // Than if succeed, delete the client from our db
+            await clientDoc.remove();
 
             return res.sendStatus(204);
         }

@@ -59,16 +59,6 @@ export class OAuth2Controller {
             { headers: { 'Authorization-Registrer': await OAuth2Controller.getToken() } },
         );
 
-        // Client registers successfully
-        if (response.status === 201) {
-
-            const createdClient = await ClientRepository.create({
-                teamId,
-                ...OAuth2Parser.parseClientInfoToModel(response.data),
-            });
-
-        }
-
         return OAuth2Parser.parseResponse(response);
     }
 
@@ -118,13 +108,6 @@ export class OAuth2Controller {
                 },
             );
 
-            // Update the client metadata in client model
-            const updatedClient =
-                await ClientRepository.update(clientId, OAuth2Parser.parseClientInfoToModel(clientInformation));
-            if (!updatedClient) {
-                throw new NotFound('Client not exists.');
-            }
-
             return OAuth2Parser.parseResponse(response);
         }
 
@@ -138,12 +121,6 @@ export class OAuth2Controller {
      * @returns Boolean indicates if the client deleted otherwise throws error
      */
     static async deleteClient(clientId: string, clientToken: string) {
-
-        // Need to first delete the client from the db
-        const deletedClient = await ClientRepository.delete(clientId);
-        if (!deletedClient) {
-            throw new NotFound('Client is not exists.');
-        }
 
         // Delete from authorization server
         const response = await axios.delete(
