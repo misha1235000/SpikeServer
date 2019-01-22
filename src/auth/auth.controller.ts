@@ -24,6 +24,8 @@ export class AuthController {
 
         // If team parameter provided
         if (team) {
+            team.teamname = team.teamname.toLowerCase();
+
             let createdTeam: ITeam;
 
             if (TeamValidator.isPasswordValid(team.password)) {
@@ -83,7 +85,7 @@ export class AuthController {
      * @param next - Next
      */
     public static async login(req: Request, res: Response) {
-        const teamReturned: ITeam | null = await TeamRepository.findByTeamname(req.body.team.teamname);
+        const teamReturned: ITeam | null = await TeamRepository.findByTeamname(req.body.team.teamname.toLowerCase());
 
         if (teamReturned) {
             // Checks if the password is correct, using bcrypt compareSync function.
