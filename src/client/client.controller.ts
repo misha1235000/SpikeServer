@@ -21,12 +21,21 @@ export class ClientController {
         const teamId = req.teamId;
 
         if (clientInformation && teamId) {
+            const hostUriChanges = clientInformation.hostUri;
+            clientInformation.hostUri = clientInformation.hostUri.toLowerCase();
+
+            for (let index = 0; index < clientInformation.redirectUris.length; index++) {
+                clientInformation.redirectUris[index] = clientInformation.redirectUris[index].replace(hostUriChanges, clientInformation.hostUri);
+            }
+
+            clientInformation.name = clientInformation.name.charAt(0).toUpperCase() +
+                                     clientInformation.name.substr(1).toLowerCase();
 
             // Creates the client in OSpike first
             const registeredClient = await OAuth2Controller.registerClient(clientInformation, teamId);
 
             // Creates the client in our db
-            await ClientRepository.create({ teamId, ...OAuth2Parser.parseClientInfoToModel(registeredClient) });
+            await ClientRepository.create({ teamId, ...registeredClient });
 
             return res.status(200).send(registeredClient);
         }
@@ -105,6 +114,20 @@ export class ClientController {
             // (we do that to avoid exposing our db to user who performs information gathering attacks)
             if (!clientDoc || clientDoc.teamId !== teamId) {
                 throw new InvalidParameter('Client id or team id parameter is invalid');
+            }
+
+            let hostUriChanges = null;
+
+            if (clientInformation.hostUri) {
+                hostUriChanges = clientInformation.hostUri;
+                clientInformation.hostUri = clientInformation.hostUri.toLowerCase();
+            }
+
+            if (clientInformation.redirectUris && clientInformation.hostUri && hostUriChanges) {
+                for (let index = 0; index < clientInformation.redirectUris.length; index++) {
+                    clientInformation.redirectUris[index] = clientInformation.redirectUris[index].replace(clientDoc.hostUri, clientInformation.hostUri);
+                    clientInformation.redirectUris[index] = clientInformation.redirectUris[index].replace(hostUriChanges, clientInformation.hostUri);
+                }
             }
 
             const updatedClient = await OAuth2Controller.updateClientInformation(clientId,

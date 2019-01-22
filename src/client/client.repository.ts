@@ -29,7 +29,7 @@ export class ClientRepository {
      */
     public static async create(client: IClient): Promise<IClient> {
         try {
-            const createdClient = ClientModel.create(client);
+            const createdClient = await ClientModel.create(client);
             return createdClient;
         } catch (error) {
             if (error.code && error.code === 11000) {

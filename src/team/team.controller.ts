@@ -15,6 +15,7 @@ export class TeamController {
         const team = req.body as ITeam;
 
         if (team) {
+            team.teamname = team.teamname.toLowerCase();
             const createdTeam = await TeamRepository.create(team);
 
             return res.json({ team: createdTeam });
@@ -53,6 +54,10 @@ export class TeamController {
         const team = req.body as Partial<ITeam>;
 
         if (Object.keys(team).length > 0 && team._id) {
+            if (team.teamname) {
+                team.teamname = team.teamname.toLowerCase();
+            }
+
             const updatedTeam = await TeamRepository.update(team._id, team);
 
             if (!updatedTeam) {
