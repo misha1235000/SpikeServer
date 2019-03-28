@@ -1,5 +1,6 @@
 // config
 import * as dotenv from 'dotenv';
+import { join } from 'path';
 dotenv.config();
 
 export const config = {
@@ -35,4 +36,8 @@ export const config = {
     },
 
     secret: process.env.OAUTH_SECRET,
+
+    // HTTPS Configurations
+    privateKeyPath: join(__dirname, 'certs/files/privatekey.pem'),
+    certificatePath: join(__dirname, 'certs/files/certificate.pem'),
 };
