@@ -4,9 +4,11 @@
   "description": "Server side of the register servers project",
   "main": "server.js",
   "scripts": {
-    "start": "tsc && set NODE_ENV=production&& node -r dotenv/config ./dist/server.js",
+    "start": "tsc && node ./scripts/copy_files.js && set NODE_ENV=production&& node -r dotenv/config ./dist/server.js",
     "test-env": "tsc && set NODE_ENV=test",
     "test": "npm run test-env&& mocha --recursive dist/**/*.spec.js --timeout 20000 --exit",
+    "copy-files": "node ./scripts/copy_files.js",
+    "generate-certs": "node ./scripts/generate_certs.js",
     "validation-test": "npm run test-env&& mocha --recursive 'dist/**/*.validator.spec.js' --exit",
     "integration-test": "npm run test-env&& mocha --recursive 'dist/**/*.router.spec.js' --exit",
     "tslint": "tslint -c tslint.json -p tsconfig.json"
@@ -61,6 +63,7 @@
     "jsonwebtoken": "^8.3.0",
     "mongoose": "^5.2.7",
     "morgan": "^1.9.0",
+    "node-forge": "^0.8.2",
     "npm": "^6.4.1",
     "simple-oauth2": "^2.2.1"
   }
