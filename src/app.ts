@@ -43,6 +43,10 @@ mongoose.connect(config.prodDatabaseUrl, { useNewUrlParser: true }).then(() => {
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Health check for Load Balancer
+app.get('/health', (req, res) => res.send('alive'));
+
 app.use('/api/auth', new AuthRouter().router);
 app.use(Wrapper.wrapAsync(AuthController.authorize)); // The authorize middleware.
 app.use('/api/client', new ClientRouter().router);
