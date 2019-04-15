@@ -144,7 +144,7 @@ describe('Client Repository Tests', () => {
             try {
                 await ClientRepository.create(duplicateClient);
             } catch (error) {
-                expect(error).to.have.property('code', 11000);
+                expect(error).to.have.property('name', 'DuplicateUnique');
             }
         });
 
@@ -171,7 +171,7 @@ describe('Client Repository Tests', () => {
             try {
                 await ClientRepository.create(duplicateClient);
             } catch (error) {
-                expect(error).to.have.property('code', 11000);
+                expect(error).to.have.property('name', 'DuplicateUnique');
             }
         });
 
@@ -198,7 +198,7 @@ describe('Client Repository Tests', () => {
             try {
                 await ClientRepository.create(duplicateClient);
             } catch (error) {
-                expect(error).to.have.property('code', 11000);
+                expect(error).to.have.property('name', 'DuplicateUnique');
             }
         });
     });
