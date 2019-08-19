@@ -43,7 +43,7 @@ describe('Client Repository Tests', () => {
                 name: 'RealTeam',
                 clientId: 'someclientidhere',
                 teamId: createdTeam.id,
-                hostUri: 'https://testclientidhere.com',
+                hostUris: 'https://testclientidhere.com',
                 token: 'sometokenhere',
             };
 
@@ -54,7 +54,7 @@ describe('Client Repository Tests', () => {
             expect(newClient).to.have.property('name', 'RealTeam');
             expect(newClient).to.have.property('clientId', 'someclientidhere');
             expect(newClient).to.have.property('teamId', createdTeam.id);
-            expect(newClient).to.have.property('hostUri', 'https://testclientidhere.com');
+            expect(newClient).to.have.property('hostUris', 'https://testclientidhere.com');
             expect(newClient).to.have.property('token', 'sometokenhere');
         });
 
@@ -63,7 +63,7 @@ describe('Client Repository Tests', () => {
                 name: '',
                 clientId: '',
                 teamId: '',
-                hostUri: '',
+                hostUris: '',
                 token: '',
             };
 
@@ -75,7 +75,7 @@ describe('Client Repository Tests', () => {
                 expect(error.errors).to.have.property('name');
                 expect(error.errors).to.have.property('clientId');
                 expect(error.errors).to.have.property('teamId');
-                expect(error.errors).to.have.property('hostUri');
+                expect(error.errors).to.have.property('hostUris');
                 expect(error.errors).to.have.property('token');
                 expect(error.name).to.equal('ValidationError');
             }
@@ -86,7 +86,7 @@ describe('Client Repository Tests', () => {
                 name: '!!!!',
                 clientId: null,
                 teamId: null,
-                hostUri: 'http://wronghosturi.com',
+                hostUris: 'http://wronghosturi.com',
                 token: null,
             };
 
@@ -98,7 +98,7 @@ describe('Client Repository Tests', () => {
                 expect(error.errors).to.have.property('name');
                 expect(error.errors).to.have.property('clientId');
                 expect(error.errors).to.have.property('teamId');
-                expect(error.errors).to.have.property('hostUri');
+                expect(error.errors).to.have.property('hostUris');
                 expect(error.errors).to.have.property('token');
                 expect(error.name).to.equal('ValidationError');
             }
@@ -109,7 +109,7 @@ describe('Client Repository Tests', () => {
                 name: 'RealTeam',
                 clientId: 'someclientidhere',
                 teamId: mongoose.Types.ObjectId().toHexString(),
-                hostUri: 'https://testclientidhere.com',
+                hostUris: 'https://testclientidhere.com',
                 token: 'sometokenhere',
             };
 
@@ -126,14 +126,14 @@ describe('Client Repository Tests', () => {
                 name: 'RealTeam',
                 clientId: 'someclientidhere',
                 teamId: createdTeam.id,
-                hostUri: 'https://testclientidhere.com',
+                hostUris: 'https://testclientidhere.com',
                 token: 'sometokenhere',
             };
             const duplicateClient: any = {
                 name: 'RealTeam',
                 clientId: 'someclientidhere',
                 teamId: createdTeam.id,
-                hostUri: 'https://testduplicateclient.com',
+                hostUris: 'https://testduplicateclient.com',
                 token: 'someothertoken',
             };
 
@@ -148,19 +148,19 @@ describe('Client Repository Tests', () => {
             }
         });
 
-        it('Should return hostUri duplicate error', async () => {
+        it('Should return hostUris duplicate error', async () => {
             const clientObject: any = {
                 name: 'RealTeam',
                 clientId: 'someclientidhere',
                 teamId: createdTeam.id,
-                hostUri: 'https://testclientidhere.com',
+                hostUris: 'https://testclientidhere.com',
                 token: 'sometokenhere',
             };
             const duplicateClient: any = {
                 name: 'RealTeam',
                 clientId: 'otherclientidhere',
                 teamId: createdTeam.id,
-                hostUri: 'https://testclientidhere.com',
+                hostUris: 'https://testclientidhere.com',
                 token: 'someothertoken',
             };
 
@@ -180,14 +180,14 @@ describe('Client Repository Tests', () => {
                 name: 'RealTeam',
                 clientId: 'someclientidhere',
                 teamId: createdTeam.id,
-                hostUri: 'https://testclientidhere.com',
+                hostUris: 'https://testclientidhere.com',
                 token: 'sometokenhere',
             };
             const duplicateClient: any = {
                 name: 'RealTeam',
                 clientId: 'otherclientidhere',
                 teamId: createdTeam.id,
-                hostUri: 'https://testduplicateclient.com',
+                hostUris: 'https://testduplicateclient.com',
                 token: 'sometokenhere',
             };
 
@@ -211,7 +211,7 @@ describe('Client Repository Tests', () => {
                 name: 'RealTeam',
                 clientId: 'someclientidhere',
                 teamId: createdTeam.id,
-                hostUri: 'https://testclientidhere.com',
+                hostUris: 'https://testclientidhere.com',
                 token: 'sometokenhere',
             };
 
@@ -224,7 +224,7 @@ describe('Client Repository Tests', () => {
             expect(foundClient).to.have.property('name', 'RealTeam');
             expect(foundClient).to.have.property('clientId', 'someclientidhere');
             expect(foundClient).to.have.property('teamId', createdTeam.id);
-            expect(foundClient).to.have.property('hostUri', 'https://testclientidhere.com');
+            expect(foundClient).to.have.property('hostUris', 'https://testclientidhere.com');
             expect(foundClient).to.have.property('token', 'sometokenhere');
         });
 
@@ -249,7 +249,7 @@ describe('Client Repository Tests', () => {
                 name: 'RealTeam',
                 clientId: 'someclientidhere',
                 teamId: createdTeam.id,
-                hostUri: 'https://testclientidhere.com',
+                hostUris: 'https://testclientidhere.com',
                 token: 'sometokenhere',
             };
 
@@ -267,7 +267,7 @@ describe('Client Repository Tests', () => {
                 name: 'SecondClient',
                 clientId: 'secondclientidhere',
                 teamId: createdTeam.id,
-                hostUri: 'https://secondclientidhere.com',
+                hostUris: 'https://secondclientidhere.com',
                 token: 'secondtokenhere',
             };
 
@@ -298,7 +298,7 @@ describe('Client Repository Tests', () => {
                 name: 'RealTeam',
                 clientId: 'someclientidhere',
                 teamId: createdTeam.id,
-                hostUri: 'https://testclientidhere.com',
+                hostUris: 'https://testclientidhere.com',
                 token: 'sometokenhere',
             };
 
@@ -310,7 +310,7 @@ describe('Client Repository Tests', () => {
                 name: 'RealTeamUpdated',
                 clientId: 'someclientidupdated',
                 teamId: createdTeam.id,
-                hostUri: 'https://testclientupdated.com',
+                hostUris: 'https://testclientupdated.com',
                 token: 'tokenupdated',
             };
 
@@ -318,7 +318,7 @@ describe('Client Repository Tests', () => {
 
             expect(updatedClient).to.have.property('name', 'RealTeamUpdated');
             expect(updatedClient).to.have.property('clientId', 'someclientidupdated');
-            expect(updatedClient).to.have.property('hostUri', 'https://testclientupdated.com');
+            expect(updatedClient).to.have.property('hostUris', 'https://testclientupdated.com');
             expect(updatedClient).to.have.property('token', 'tokenupdated');
         });
 
@@ -327,7 +327,7 @@ describe('Client Repository Tests', () => {
                 name: 'SecondClient',
                 clientId: 'secondclientidhere',
                 teamId: createdTeam.id,
-                hostUri: 'https://secondclientidhere.com',
+                hostUris: 'https://secondclientidhere.com',
                 token: 'secondtokenhere',
             };
 
@@ -353,7 +353,7 @@ describe('Client Repository Tests', () => {
                 name: null,
                 clientId: null,
                 teamId: null,
-                hostUri: 'http://testclientidhere.com',
+                hostUris: 'http://testclientidhere.com',
                 token: null,
             };
 
@@ -364,7 +364,7 @@ describe('Client Repository Tests', () => {
                 expect(error.errors).to.have.property('name');
                 expect(error.errors).to.have.property('clientId');
                 expect(error.errors).to.have.property('teamId');
-                expect(error.errors).to.have.property('hostUri');
+                expect(error.errors).to.have.property('hostUris');
                 expect(error.errors).to.have.property('token');
             }
         });
@@ -374,7 +374,7 @@ describe('Client Repository Tests', () => {
                 name: '',
                 clientId: '',
                 teamId: '',
-                hostUri: '',
+                hostUris: '',
                 token: '',
             };
 
@@ -385,7 +385,7 @@ describe('Client Repository Tests', () => {
                 expect(error.errors).to.have.property('name');
                 expect(error.errors).to.have.property('clientId');
                 expect(error.errors).to.have.property('teamId');
-                expect(error.errors).to.have.property('hostUri');
+                expect(error.errors).to.have.property('hostUris');
                 expect(error.errors).to.have.property('token');
             }
         });
@@ -399,7 +399,7 @@ describe('Client Repository Tests', () => {
                 name: 'RealTeam',
                 clientId: 'someclientidhere',
                 teamId: createdTeam.id,
-                hostUri: 'https://testclientidhere.com',
+                hostUris: 'https://testclientidhere.com',
                 token: 'sometokenhere',
             };
 

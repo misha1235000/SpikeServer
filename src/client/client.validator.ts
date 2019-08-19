@@ -12,7 +12,7 @@ export class ClientValidator {
                        ClientValidator.isTokenValid(client.token) &&
                        ClientValidator.isTeamIdValid(client.teamId) &&
                        ClientValidator.isNameValid(client.name) &&
-                       ClientValidator.isHostnameValid(client.hostUri);
+                       ClientValidator.isHostnameValid(client.hostUris);
     }
 
     static isClientIdValid(clientId: string): boolean {
@@ -50,10 +50,17 @@ export class ClientValidator {
 
         throw new InvalidName('Client Name Invalid. 4 - 30 characters, contains letters or numbers');
     }
-    static isHostnameValid(hostname: string): boolean {
+    static isHostnameValid(hostnames: string[]): boolean {
         const hostnameRegex = /^(https:\/\/([A-Za-z0-9\._\-]+)([A-Za-z0-9]+))(:[1-9][0-9]{0,3}|:[1-5][0-9]{4}|:6[0-4][0-9]{3}|:65[0-4][0-9]{2}|:655[0-2][0-9]|:6553[0-5])?$/;
+        let isValidHost = true;
 
-        if (hostnameRegex.test(hostname)) {
+        for (let currHostIndex = 0; currHostIndex < hostnames.length; currHostIndex++) {
+            if (!hostnameRegex.test(hostnames[currHostIndex])) {
+                isValidHost = false;
+            }
+        }
+
+        if (isValidHost === true) {
             return true;
         }
 

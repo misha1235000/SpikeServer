@@ -26,8 +26,8 @@ const ClientSchema = new Schema({
             message: 'TeamId isn\'t valid',
         },
     },
-    hostUri: {
-        type: String,
+    hostUris: {
+        type: [String],
         unique: true,
         required: true,
         validate: [ClientValidator.isHostnameValid, 'Hostname isn\'t valid'],
