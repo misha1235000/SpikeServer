@@ -47,7 +47,16 @@ export class ClientRepository {
      * @param client - The new client that needs to be replaced with the old one.
      */
     public static update(clientId: string, client: Partial<IClient>): DocumentQuery<IClient | null, IClient> {
-        return ClientModel.findOneAndUpdate({ clientId }, client, { new: true, runValidators: true });
+        const updateHostUris = client.hostUris;
+        const newClient = client;
+        delete newClient['hostUris'];
+
+        return ClientModel.findOneAndUpdate(
+            { clientId },
+            { ...newClient, $addToSet: { hostUris: updateHostUris } },
+            { new: true, runValidators: true },
+        );
+        // return ClientModel.findOneAndUpdate({ clientId }, client, { new: true, runValidators: true });
     }
 
     /**
