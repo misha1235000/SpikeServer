@@ -7,7 +7,7 @@ import { Forbidden } from '../auth/auth.error';
 export interface IClientBasicInformation {
     name: string;
     redirectUris: string[];
-    hostUri: string;
+    hostUris: string[];
     scopes?: string[];
 }
 
@@ -67,7 +67,7 @@ export class OAuth2Parser {
         return {
             ...(clientInformation.id ? { clientId: clientInformation.id } : {}),
             ...(clientInformation.name ? { name: clientInformation.name } : {}),
-            ...(clientInformation.hostUri ? { hostUri: clientInformation.hostUri } : {}),
+            ...(clientInformation.hostUris ? { hostUris: clientInformation.hostUris } : {}),
             ...(clientInformation.registrationToken ? { token: clientInformation.registrationToken } : {}),
         };
     }

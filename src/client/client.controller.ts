@@ -16,25 +16,23 @@ export class ClientController {
      */
     public static async create(req: Request, res: Response) {
 
-        // Gets the client information required for register client in authorization server
+        // Gets the client information required for register client in authorization server.
         const clientInformation = req.body.clientInformation as IClientBasicInformation;
         const teamId = req.teamId;
-
+        console.log(clientInformation);
+        // If there is clientInformation (data) and there is a teamId, then proceed.
         if (clientInformation && teamId) {
-            const hostUriChanges = clientInformation.hostUri;
-            clientInformation.hostUri = clientInformation.hostUri.toLowerCase();
+            // Set the all the host uris, to lower case.
+            clientInformation.hostUris = clientInformation.hostUris.map(hostUri => hostUri.toLowerCase());
 
-            for (let index = 0; index < clientInformation.redirectUris.length; index++) {
-                clientInformation.redirectUris[index] = clientInformation.redirectUris[index].replace(hostUriChanges, clientInformation.hostUri);
-            }
-
+            // Set the client name first digit to uppercase and the other to lower.
             clientInformation.name = clientInformation.name.charAt(0).toUpperCase() +
                                      clientInformation.name.substr(1).toLowerCase();
 
             // Creates the client in OSpike first
             const registeredClient = await OAuth2Controller.registerClient(clientInformation, teamId);
 
-            // Creates the client in our db
+            // Creates the client in the Spike Server db
             await ClientRepository.create({ teamId, ...registeredClient });
 
             return res.status(200).send(registeredClient);
@@ -116,20 +114,13 @@ export class ClientController {
                 throw new InvalidParameter('Client id or team id parameter is invalid');
             }
 
-            let hostUriChanges = null;
-
-            if (clientInformation.hostUri) {
-                hostUriChanges = clientInformation.hostUri;
-                clientInformation.hostUri = clientInformation.hostUri.toLowerCase();
+            // If there are hostUris (Data), then set them all to lowercase.
+            if (clientInformation.hostUris) {
+                clientInformation.hostUris = clientInformation.hostUris.map(hostUri => hostUri.toLowerCase());
             }
-
-            if (clientInformation.redirectUris && clientInformation.hostUri && hostUriChanges) {
-                for (let index = 0; index < clientInformation.redirectUris.length; index++) {
-                    clientInformation.redirectUris[index] = clientInformation.redirectUris[index].replace(clientDoc.hostUri, clientInformation.hostUri);
-                    clientInformation.redirectUris[index] = clientInformation.redirectUris[index].replace(hostUriChanges, clientInformation.hostUri);
-                }
-            }
-
+            console.log(clientId);
+            console.log(clientInformation);
+            console.log(clientDoc.token);
             const updatedClient = await OAuth2Controller.updateClientInformation(clientId,
                                                                                  clientInformation,
                                                                                  clientDoc.token);

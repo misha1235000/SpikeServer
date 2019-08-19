@@ -28,6 +28,7 @@ export class ClientRepository {
      * @param client - The client to create
      */
     public static async create(client: IClient): Promise<IClient> {
+        console.log(client);
         try {
             const createdClient = await ClientModel.create(client);
             return createdClient;
