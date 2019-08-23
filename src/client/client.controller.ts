@@ -5,7 +5,7 @@ import { OAuth2Controller } from '../oauth2/oauth2.controller';
 import { IClientBasicInformation, IClientInformation, OAuth2Parser } from '../oauth2/oauth2.parser';
 import { ClientRepository } from './client.repository';
 import { IClient } from './client.interface';
-import { InvalidParameter, NotFound } from '../utils/error';
+import { InvalidParameter, NotFound, DuplicateUnique } from '../utils/error';
 
 export class ClientController {
 
@@ -117,6 +117,10 @@ export class ClientController {
             // If there are hostUris (Data), then set them all to lowercase.
             if (clientInformation.hostUris) {
                 clientInformation.hostUris = clientInformation.hostUris.map(hostUri => hostUri.toLowerCase());
+                const setHostUris = new Set(clientInformation.hostUris);
+                if (clientInformation.hostUris.length !== setHostUris.size) {
+                    throw new DuplicateUnique('Duplicate hostUri Was Given');
+                }
             }
             console.log(clientId);
             console.log(clientInformation);
