@@ -3,6 +3,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { TeamValidator } from '../team/team.validator';
 import { TeamRepository } from '../team/team.repository';
+import { LOG_LEVEL, log, parseLogData } from '../utils/logger';
 import { ITeam } from '../team/team.interface';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
@@ -11,6 +12,16 @@ import { Unauthorized } from './auth.error';
 import { InvalidParameter } from '../utils/error';
 
 export class AuthController {
+    static readonly AUTH_MESSAGES = {
+        INVALID_CREDENTIALS: 'Incorrect teamname or password given.',
+        INVALID_PARAMETER: 'Team parameter is missing.',
+        UNAUTHORIZED_NO_TOKEN: 'Unauthorized, No token provided.',
+        UNAUTHORIZED_BAD_TOKEN: 'Invalid token provided.',
+        UNAUTHORIZED_UNEXSISTING_TEAM: 'Token signed with unexisting team.',
+        NO_STACK: 'No stack was found.',
+        SUCCESSFULLY_LOGIN: 'Successfully logged in.',
+        SUCCESSFULLY_REGISTER: 'Successfully registered.',
+    };
 
     /**
      * Register a new team to the mongo, and generates a JWT
@@ -38,11 +49,21 @@ export class AuthController {
                     expiresIn: 600,
                 });
 
+                log(LOG_LEVEL.INFO, parseLogData(AuthController.AUTH_MESSAGES.SUCCESSFULLY_REGISTER,
+                                                 'AuthController',
+                                                 '200',
+                                                 AuthController.AUTH_MESSAGES.NO_STACK));
+
                 return res.status(200).send({ token, auth: true });
             }
         }
 
-        throw new InvalidParameter('team parameter is missing.');
+        log(LOG_LEVEL.INFO, parseLogData(AuthController.AUTH_MESSAGES.INVALID_PARAMETER,
+                                         'AuthController',
+                                         '400',
+                                         AuthController.AUTH_MESSAGES.NO_STACK));
+
+        throw new InvalidParameter(AuthController.AUTH_MESSAGES.INVALID_PARAMETER);
     }
 
     /**
@@ -56,7 +77,12 @@ export class AuthController {
 
         // If the token wasn't in the authorization header.
         if (!token) {
-            throw new Unauthorized('Unauthorized, No token provided.');
+            log(LOG_LEVEL.WARN, parseLogData(AuthController.AUTH_MESSAGES.UNAUTHORIZED_NO_TOKEN,
+                                             'AuthController',
+                                             '401',
+                                             AuthController.AUTH_MESSAGES.NO_STACK));
+
+            throw new Unauthorized(AuthController.AUTH_MESSAGES.UNAUTHORIZED_NO_TOKEN);
         }
 
         try {
@@ -66,14 +92,24 @@ export class AuthController {
 
             // Check if the token contains existing team
             if (!returnedTeam) {
-                throw new Unauthorized('Token signed with unexisting team.');
+                log(LOG_LEVEL.INFO, parseLogData(AuthController.AUTH_MESSAGES.UNAUTHORIZED_UNEXSISTING_TEAM,
+                                                 'AuthController',
+                                                 '401',
+                                                 AuthController.AUTH_MESSAGES.NO_STACK));
+
+                throw new Unauthorized(AuthController.AUTH_MESSAGES.UNAUTHORIZED_UNEXSISTING_TEAM);
             }
 
             req.teamId = jwtVerify.id;
 
             next();
         } catch (err) {
-            throw new Unauthorized('Invalid token provided.');
+            log(LOG_LEVEL.WARN, parseLogData(AuthController.AUTH_MESSAGES.UNAUTHORIZED_BAD_TOKEN,
+                                             'AuthController',
+                                             '401',
+                                             err));
+
+            throw new Unauthorized(AuthController.AUTH_MESSAGES.UNAUTHORIZED_BAD_TOKEN);
         }
     }
 
@@ -92,18 +128,33 @@ export class AuthController {
             const passwordIsValid = bcrypt.compareSync(req.body.team.password, teamReturned.password);
 
             if (!passwordIsValid) {
-                throw new Unauthorized('Incorrect teamname or password given.');
+                log(LOG_LEVEL.INFO, parseLogData(AuthController.AUTH_MESSAGES.INVALID_CREDENTIALS,
+                                                 'AuthController',
+                                                 '401',
+                                                 AuthController.AUTH_MESSAGES.NO_STACK));
+
+                throw new Unauthorized(AuthController.AUTH_MESSAGES.INVALID_CREDENTIALS);
             }
 
             // Generate a JWT token.
             const token = jwt.sign({ id: teamReturned._id }, config.secret as string, { expiresIn: 600 });
 
+            log(LOG_LEVEL.INFO, parseLogData(AuthController.AUTH_MESSAGES.SUCCESSFULLY_LOGIN,
+                                             'AuthController',
+                                             '200',
+                                             AuthController.AUTH_MESSAGES.NO_STACK));
+
             return res.status(200).send({ token, auth: true });
         }
 
-        // For the sick of information gathering techniques, we should'nt give the user
+        log(LOG_LEVEL.INFO, parseLogData(AuthController.AUTH_MESSAGES.INVALID_CREDENTIALS,
+                                         'AuthController',
+                                         '401',
+                                         AuthController.AUTH_MESSAGES.NO_STACK));
+
+        // For the seek of information gathering techniques, we shouldn't give the user
         // information if he entered right teamname.
-        throw new Unauthorized('Incorrect teamname or password given.');
+        throw new Unauthorized(AuthController.AUTH_MESSAGES.INVALID_CREDENTIALS);
     }
 
     /**
