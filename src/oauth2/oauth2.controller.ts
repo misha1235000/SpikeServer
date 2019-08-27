@@ -3,6 +3,7 @@
 import axios from 'axios';
 import { create, AccessToken } from 'simple-oauth2';
 import { config } from '../config';
+import { LOG_LEVEL, log, parseLogData } from '../utils/logger';
 import { OAuth2Parser, IClientInformation, IClientBasicInformation } from './oauth2.parser';
 import { ClientRepository } from '../client/client.repository';
 import { NotFound, InvalidParameter } from '../utils/error';
@@ -11,6 +12,11 @@ import { InvalidClientInformation } from './oauth2.error';
 // TODO: Need to add the server token somehow in the authroization server api requests
 
 export class OAuth2Controller {
+    static readonly OAUTH_MESSAGES = {
+        GET_TOKEN_ERROR: 'Error occured while getting a token.',
+        ID_PARAMETER_MISSING: 'Client id Parameter is missing.',
+        NO_STACK: 'No stack was found.',
+    };
 
     // OAuth2 configured root flow with Client Credentials options
     static oauth2Flow = create(config.clientCredentials as any);
@@ -42,6 +48,11 @@ export class OAuth2Controller {
             OAuth2Controller.accessToken = OAuth2Controller.oauth2Flow.accessToken.create(result);
             return OAuth2Controller.accessToken.token.access_token;
         } catch (err) {
+            log(LOG_LEVEL.INFO, parseLogData(OAuth2Controller.OAUTH_MESSAGES.GET_TOKEN_ERROR,
+                                             'OAuth2Controller',
+                                             '400',
+                                             err));
+
             throw err;
         }
     }
@@ -110,6 +121,11 @@ export class OAuth2Controller {
 
             return OAuth2Parser.parseResponse(response);
         }
+
+        log(LOG_LEVEL.INFO, parseLogData(OAuth2Controller.OAUTH_MESSAGES.ID_PARAMETER_MISSING,
+                                         'OAuth2Controller',
+                                         '400',
+                                         OAuth2Controller.OAUTH_MESSAGES.NO_STACK));
 
         throw new InvalidClientInformation('Client id parameter is missing');
     }

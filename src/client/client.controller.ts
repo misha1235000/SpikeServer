@@ -2,12 +2,22 @@
 
 import { Request, Response } from 'express';
 import { OAuth2Controller } from '../oauth2/oauth2.controller';
+import { LOG_LEVEL, log, parseLogData } from '../utils/logger';
 import { IClientBasicInformation, IClientInformation, OAuth2Parser } from '../oauth2/oauth2.parser';
 import { ClientRepository } from './client.repository';
 import { IClient } from './client.interface';
 import { InvalidParameter, NotFound, DuplicateUnique } from '../utils/error';
 
 export class ClientController {
+    static readonly CLIENT_MESSAGES = {
+        INVALID_PARAMETER: 'Client information or team id parameter is missing.',
+        CLIENT_NOT_FOUND: 'Clients not found.',
+        ID_PARAMETER_MISSING: 'id Parameter is missing.',
+        DUPLICATE_HOSTURI: 'Duplicate hostUri Was Given.',
+        NO_STACK: 'No stack was found.',
+        SUCCESSFULLY_CREATED: 'Client Successfully Created',
+        GET_CLIENT_INFORMATION: 'Got Client Information from OSpike.',
+    };
 
     /**
      * Creates a new client.
@@ -19,7 +29,7 @@ export class ClientController {
         // Gets the client information required for register client in authorization server.
         const clientInformation = req.body.clientInformation as IClientBasicInformation;
         const teamId = req.teamId;
-        console.log(clientInformation);
+
         // If there is clientInformation (data) and there is a teamId, then proceed.
         if (clientInformation && teamId) {
             // Set the all the host uris, to lower case.
@@ -35,10 +45,20 @@ export class ClientController {
             // Creates the client in the Spike Server db
             await ClientRepository.create({ teamId, ...registeredClient });
 
+            log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.SUCCESSFULLY_CREATED,
+                                             'ClientController',
+                                             '200',
+                                             ClientController.CLIENT_MESSAGES.NO_STACK));
+
             return res.status(200).send(registeredClient);
         }
 
-        throw new InvalidParameter('Client information or team id parameter is missing.');
+        log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER,
+                                         'ClientController',
+                                         '400',
+                                         ClientController.CLIENT_MESSAGES.NO_STACK));
+
+        throw new InvalidParameter(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER);
     }
 
     /**
@@ -60,13 +80,23 @@ export class ClientController {
             // Checks if the client is unexist or client not associated to the team
             // (we do that to avoid exposing our db to user who performs information gathering attacks)
             if (!clientDoc || clientDoc.teamId !== teamId) {
-                throw new InvalidParameter('Client id or team id parameter is invalid');
+                log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER,
+                                                 'ClientController',
+                                                 '400',
+                                                 ClientController.CLIENT_MESSAGES.NO_STACK));
+
+                throw new InvalidParameter(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER);
             }
 
             return res.status(200).send(await OAuth2Controller.readClientInformation(clientId, clientDoc.token));
         }
 
-        throw new InvalidParameter('Client id or team id parameter is missing.');
+        log(LOG_LEVEL.INFO, parseLogData(this.CLIENT_MESSAGES.INVALID_PARAMETER,
+                                         'ClientController',
+                                         '400',
+                                         ClientController.CLIENT_MESSAGES.NO_STACK));
+
+        throw new InvalidParameter(this.CLIENT_MESSAGES.INVALID_PARAMETER);
     }
 
     /**
@@ -82,13 +112,23 @@ export class ClientController {
             const returnedClients: IClient[] | null = await ClientRepository.findByTeamId(id);
 
             if (!returnedClients) {
-                throw new NotFound('Clients not found.');
+                log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.CLIENT_NOT_FOUND,
+                                                 'ClientController',
+                                                 '404',
+                                                 ClientController.CLIENT_MESSAGES.NO_STACK));
+
+                throw new NotFound(ClientController.CLIENT_MESSAGES.CLIENT_NOT_FOUND);
             }
 
             return res.status(200).send(returnedClients);
         }
 
-        throw new InvalidParameter('id parameter is missing.');
+        log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER,
+                                         'ClientController',
+                                         '400',
+                                         ClientController.CLIENT_MESSAGES.NO_STACK));
+
+        throw new InvalidParameter(ClientController.CLIENT_MESSAGES.ID_PARAMETER_MISSING);
     }
 
     /**
@@ -111,20 +151,29 @@ export class ClientController {
             // Checks if the client is unexist or client not associated to the team
             // (we do that to avoid exposing our db to user who performs information gathering attacks)
             if (!clientDoc || clientDoc.teamId !== teamId) {
-                throw new InvalidParameter('Client id or team id parameter is invalid');
+                log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER,
+                                                 'ClientController',
+                                                 '400',
+                                                 ClientController.CLIENT_MESSAGES.NO_STACK));
+
+                throw new InvalidParameter(this.CLIENT_MESSAGES.INVALID_PARAMETER);
             }
 
             // If there are hostUris (Data), then set them all to lowercase.
             if (clientInformation.hostUris) {
                 clientInformation.hostUris = clientInformation.hostUris.map(hostUri => hostUri.toLowerCase());
                 const setHostUris = new Set(clientInformation.hostUris);
+
                 if (clientInformation.hostUris.length !== setHostUris.size) {
-                    throw new DuplicateUnique('Duplicate hostUri Was Given');
+                    log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.DUPLICATE_HOSTURI,
+                                                     'ClientController',
+                                                     '400',
+                                                     ClientController.CLIENT_MESSAGES.NO_STACK));
+
+                    throw new DuplicateUnique(ClientController.CLIENT_MESSAGES.DUPLICATE_HOSTURI);
                 }
             }
-            console.log(clientId);
-            console.log(clientInformation);
-            console.log(clientDoc.token);
+
             const updatedClient = await OAuth2Controller.updateClientInformation(clientId,
                                                                                  clientInformation,
                                                                                  clientDoc.token);
@@ -134,7 +183,12 @@ export class ClientController {
             return res.status(200).send(updatedClient);
         }
 
-        throw new InvalidParameter('Client information or client id or team id is missing.');
+        log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER,
+                                         'ClientController',
+                                         '400',
+                                         ClientController.CLIENT_MESSAGES.NO_STACK));
+
+        throw new InvalidParameter(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER);
     }
 
     /**
@@ -154,7 +208,12 @@ export class ClientController {
             // Checks if the client is unexist or client not associated to the team
             // (we do that to avoid exposing our db to user who performs information gathering attacks)
             if (!clientDoc || clientDoc.teamId !== teamId) {
-                throw new InvalidParameter('Client id or team id parameter is invalid');
+                log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER,
+                                                 'ClientController',
+                                                 '400',
+                                                 ClientController.CLIENT_MESSAGES.NO_STACK));
+
+                throw new InvalidParameter(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER);
             }
 
             // First delete the client from OSpike
@@ -166,6 +225,11 @@ export class ClientController {
             return res.sendStatus(204);
         }
 
-        throw new InvalidParameter('Client id or team id is missing.');
+        log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER,
+                                         'ClientController',
+                                         '400',
+                                         ClientController.CLIENT_MESSAGES.NO_STACK));
+
+        throw new InvalidParameter(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER);
     }
 }
