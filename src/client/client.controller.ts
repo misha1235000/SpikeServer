@@ -192,6 +192,40 @@ export class ClientController {
     }
 
     /**
+     * Reset client credentials by specified id.
+     * @param req - Request
+     * @param res - Response
+     */
+    public static async reset(req: Request, res: Response) {
+        const clientId = req.params.clientId;
+        const teamId = req.teamId;
+
+        if (clientId && teamId) {
+
+            // Getting the client registration token associated to the client
+            const clientDoc = await ClientRepository.findById(clientId);
+
+            // Checks if the client is unexist or client not associated to the team
+            // (we do that to avoid exposing our db to user who performs information gathering attacks)
+            if (!clientDoc || clientDoc.teamId !== teamId) {
+                log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER,
+                                                 'ClientController',
+                                                 '400',
+                                                 ClientController.CLIENT_MESSAGES.NO_STACK));
+
+                throw new InvalidParameter(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER);
+            }
+
+            // Resetting client credentials and update in local db
+            const updatedClient = await OAuth2Controller.resetClientCredentials(clientId, clientDoc.token);
+            clientDoc.id = updatedClient.clientId;
+            await clientDoc.save();
+
+            return res.status(200).send(updatedClient);
+        }
+    }
+
+    /**
      * Deletes a client by a specified id.
      * @param req - Request
      * @param res - Response
