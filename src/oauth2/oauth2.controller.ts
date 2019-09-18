@@ -131,6 +131,28 @@ export class OAuth2Controller {
     }
 
     /**
+     * Reset client credentials (Client ID, Client Secret) for specific client
+     * @param clientId - Client id of the client to reset
+     * @param clientToken - Client token for managing the client
+     * @returns Client with updated id and secret
+     */
+    static async resetClientCredentials(clientId: string, clientToken: string) {
+
+        // Reset client credentials (Client ID, Client Secret)
+        const response = await axios.patch(
+            `${config.authorizationServerAPI}${clientId}`,
+            {
+                headers: {
+                    'Authorization-Registrer': await OAuth2Controller.getToken(),
+                    Authorization: clientToken,
+                },
+            },
+        );
+
+        return OAuth2Parser.parseResponse(response);
+    }
+
+    /**
      * Deletes client from the authorization server
      * @param clientId - Client id of the client to delete
      * @param clientToken - Client token for managing the client
