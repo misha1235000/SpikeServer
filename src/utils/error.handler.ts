@@ -6,6 +6,9 @@ import { MongoError } from 'mongodb';
 
 // TODO: Change error type from any
 export function errorHandler(error: any, req: Request, res: Response, next: NextFunction) {
+
+    console.log(error);
+
     if (error instanceof BaseError) {
         return res.status(error.status).send({ message: error.message });
     }

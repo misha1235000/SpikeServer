@@ -218,11 +218,17 @@ export class ClientController {
 
             // Resetting client credentials and update in local db
             const updatedClient = await OAuth2Controller.resetClientCredentials(clientId, clientDoc.token);
-            clientDoc.id = updatedClient.clientId;
-            await clientDoc.save();
+            await ClientRepository.update(clientId, { clientId: updatedClient.clientId });
 
             return res.status(200).send(updatedClient);
         }
+
+        log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER,
+            'ClientController',
+            '400',
+            ClientController.CLIENT_MESSAGES.NO_STACK));
+
+        throw new InvalidParameter(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER);
     }
 
     /**

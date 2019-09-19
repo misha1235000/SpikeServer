@@ -140,7 +140,7 @@ export class OAuth2Controller {
 
         // Reset client credentials (Client ID, Client Secret)
         const response = await axios.patch(
-            `${config.authorizationServerAPI}${clientId}`,
+            `${config.authorizationServerAPI}/${clientId}`, {},
             {
                 headers: {
                     'Authorization-Registrer': await OAuth2Controller.getToken(),

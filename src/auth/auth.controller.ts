@@ -74,7 +74,7 @@ export class AuthController {
      */
     public static async authorize(req: Request, res: Response, next: NextFunction) {
         const token = req.headers['authorization'];
-
+        
         // If the token wasn't in the authorization header.
         if (!token) {
             log(LOG_LEVEL.WARN, parseLogData(AuthController.AUTH_MESSAGES.UNAUTHORIZED_NO_TOKEN,
