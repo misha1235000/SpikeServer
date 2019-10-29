@@ -62,7 +62,7 @@
     "elastic-apm-node": "^2.16.0",
     "express": "^4.16.3",
     "jsonwebtoken": "^8.3.0",
-    "mongoose": "^5.2.7",
+    "mongoose": "^5.7.5",
     "morgan": "^1.9.0",
     "node-forge": "^0.8.2",
     "npm": "^6.4.1",
