@@ -65,7 +65,7 @@
     "mongoose": "^5.2.7",
     "morgan": "^1.9.0",
     "node-forge": "^0.8.2",
-    "npm": "^6.4.1",
+    "npm": "^6.13.4",
     "simple-oauth2": "^2.2.1",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^3.10.0"
