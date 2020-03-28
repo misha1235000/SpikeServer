@@ -2,7 +2,7 @@
 
 import { ClientModel } from './client.model';
 import { IClient } from './client.interface';
-import { DocumentQuery } from 'mongoose';
+import { DocumentQuery, Types } from 'mongoose';
 import { DuplicateUnique } from '../utils/error';
 
 export class ClientRepository {
@@ -23,12 +23,17 @@ export class ClientRepository {
         return ClientModel.find({ teamId });
     }
 
+    public static findByTeamIds(teamIds: Types.ObjectId[]): DocumentQuery<IClient[] | null, IClient> {
+        return ClientModel.find({
+            teamId: { $in: teamIds },
+        });
+    }
+
     /**
      * Creates a new client.
      * @param client - The client to create
      */
     public static async create(client: IClient): Promise<IClient> {
-        console.log(client);
         try {
             const createdClient = await ClientModel.create(client);
             return createdClient;

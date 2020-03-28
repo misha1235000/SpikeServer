@@ -1,5 +1,6 @@
 declare namespace Express {
     export interface Request {
-        teamId? : string
+        teamId? : string,
+        person? : any
     }
 }

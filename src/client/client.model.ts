@@ -45,7 +45,6 @@ ClientSchema.methods.toJSON = function () {
     delete obj._id;
     delete obj.__v;
     delete obj.token;
-    delete obj.teamId;
     return obj;
 };
 

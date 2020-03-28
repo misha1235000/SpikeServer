@@ -1,0 +1,33 @@
+const getTokenCreator = require('spike-get-token');
+import * as axios from 'axios';
+import { writeFileSync } from 'fs';
+import { join } from 'path';
+import * as https from 'https';
+
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+const PUBLIC_KEY_PATH = join(__dirname, 'certs/files/publickeyofclient.pem');
+
+async function readAndWrite() {
+    const agent = new https.Agent({
+        rejectUnauthorized: false,
+    });
+
+    const read = await axios.default.get('https://51.144.178.121:1337/.well-known/publickey.pem', { httpsAgent: agent });
+    writeFileSync(PUBLIC_KEY_PATH, read.data);
+}
+
+const options = {
+    redisHost: process.env.REDIS_URL || 'redis://localhost:6379',
+    ClientId: process.env.CLIENT_ID_FOR_KARTOFFEL,
+    ClientSecret: process.env.CLIENT_SECRET_FOR_KARTOFFEL,
+    spikeURL: 'https://51.144.178.121:1337/oauth2/token' || `${process.env.OAUTH_URL}:${process.env.OAUTH_PORT}/oauth2/token`,
+    tokenGrantType: process.env.TOKEN_GRANT_TYPE || 'client_credentials',
+    tokenAudience: process.env.TOKEN_AUDIENCE || 'kartoffel',
+    spikePublicKeyFullPath: PUBLIC_KEY_PATH,
+    useRedis: true,
+    httpsValidation: false,
+};
+
+readAndWrite();
+export const getToken = getTokenCreator(options);

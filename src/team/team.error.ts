@@ -8,8 +8,14 @@ export class InvalidTeamname extends InvalidParameter {
     }
 }
 
-export class InvalidPassword extends InvalidParameter {
+export class InvalidTeamInformation extends InvalidParameter {
     constructor(message?: string) {
-        super(message || 'Invalid Password Provided');
+        super(message || 'Invalid Team Information Provided');
+    }
+}
+
+export class MissingUsers extends InvalidParameter {
+    constructor(message?: string) {
+        super(message || 'Missing Users in Team');
     }
 }

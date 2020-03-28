@@ -3,18 +3,34 @@
 import { model, Schema } from 'mongoose';
 import { ITeam } from './team.interface';
 import { TeamValidator } from './team.validator';
+import { MissingUsers } from './team.error';
 import { hashSync } from 'bcrypt';
 
 const TeamSchema = new Schema({
+    ownerId: {
+        type: String,
+        unique: false,
+        required: true,
+    },
+    userIds: {
+        type: [String],
+        required: false,
+        validate: [TeamValidator.isTeamIdsValid, ''],
+    },
+    adminIds: {
+        type: [String],
+        required: true,
+        validate: [TeamValidator.isTeamIdsValid, ''],
+    },
     teamname: {
         type: String,
         unique: true,
         required: true,
         validate: [TeamValidator.isTeamnameValid, 'Teamname isn\'t valid'],
     },
-    password: {
+    desc: {
         type: String,
-        required: true,
+        required: false,
     },
 });
 
@@ -26,24 +42,6 @@ const generatePasswordHash = (password: string) => {
     return hashSync(password, 8);
 };
 
-// Before saving, hashing the password saved
-TeamSchema.pre<ITeam>('save', function save() {
-    this.password = generatePasswordHash(this.password);
-});
-
-// Before updating, hashing the updated password (if needed)
-TeamSchema.pre('update', function update(next) {
-
-    // Check if not need to update password
-    const password = this.getUpdate().$set.password;
-    if (!password) {
-        return next();
-    }
-
-    this.getUpdate().$set.password = generatePasswordHash(password);
-    return next();
-});
-
 // Virtual field for getting all the clients of specific team
 // Used via population as described in https://mongoosejs.com/docs/populate.html#populate-virtuals
 TeamSchema.virtual('clients', {
@@ -52,6 +50,18 @@ TeamSchema.virtual('clients', {
     foreignField: 'teamId',
     justOne: false,
     options: { sort: { name: -1 } },
+});
+
+TeamSchema.pre<ITeam>('validate', function validate(this: ITeam, next: any) {
+
+    let error = null;
+
+    // Checking if the update make the team become empty
+    if ((this.userIds && this.userIds.length === 0) && (this.adminIds && this.adminIds.length === 0)) {
+        error = new MissingUsers('Cannot update team without users');
+    }
+
+    next(error);
 });
 
 export const TeamModel = model<ITeam>('Team', TeamSchema);
