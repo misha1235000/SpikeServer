@@ -13,15 +13,15 @@ async function readAndWrite() {
         rejectUnauthorized: false,
     });
 
-    const read = await axios.default.get('https://51.144.178.121:1337/.well-known/publickey.pem', { httpsAgent: agent });
+    const read = await axios.default.get(`${process.env.OAUTH_URL}:${process.env.OAUTH_PORT}/.well-known/publickey.pem`, { httpsAgent: agent });
     writeFileSync(PUBLIC_KEY_PATH, read.data);
 }
 
 const options = {
-    redisHost: process.env.REDIS_URL || 'redis://localhost:6379',
-    ClientId: process.env.CLIENT_ID_FOR_KARTOFFEL,
-    ClientSecret: process.env.CLIENT_SECRET_FOR_KARTOFFEL,
-    spikeURL: 'https://51.144.178.121:1337/oauth2/token' || `${process.env.OAUTH_URL}:${process.env.OAUTH_PORT}/oauth2/token`,
+    redisHost: `redis://:${process.env.REDIS_PASSWORD}@localhost:6379`,
+    ClientId: process.env.CLIENT_ID,
+    ClientSecret: process.env.CLIENT_SECRET,
+    spikeURL: `${process.env.OAUTH_URL}:${process.env.OAUTH_PORT}/oauth2/token`,
     tokenGrantType: process.env.TOKEN_GRANT_TYPE || 'client_credentials',
     tokenAudience: process.env.TOKEN_AUDIENCE || 'kartoffel',
     spikePublicKeyFullPath: PUBLIC_KEY_PATH,
