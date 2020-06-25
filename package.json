@@ -11,6 +11,7 @@
     "generate-certs": "node ./scripts/generate_certs.js",
     "validation-test": "npm run test-env&& mocha --recursive 'dist/**/*.validator.spec.js' --exit",
     "integration-test": "npm run test-env&& mocha --recursive 'dist/**/*.router.spec.js' --exit",
+    "fuzzy-update": "node ./scripts/db_update_fuzzy.js",
     "tslint": "tslint -c tslint.json -p tsconfig.json"
   },
   "repository": {
