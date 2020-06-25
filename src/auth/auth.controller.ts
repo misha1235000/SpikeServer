@@ -7,6 +7,8 @@ import { LOG_LEVEL, log, parseLogData } from '../utils/logger';
 import { ITeam } from '../team/team.interface';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { config } from '../config';
 import { Unauthorized } from './auth.error';
 import { InvalidParameter } from '../utils/error';
@@ -19,9 +21,11 @@ export class AuthController {
         UNAUTHORIZED_BAD_TOKEN: 'Invalid token provided.',
         UNAUTHORIZED_UNEXSISTING_TEAM: 'Token signed with unexisting team.',
         NO_STACK: 'No stack was found.',
-        SUCCESSFULLY_LOGIN: 'Successfully logged in.',
+        SUCCESSFULLY_TEAM_CREATE: 'Successfully Created a team.',
         SUCCESSFULLY_REGISTER: 'Successfully registered.',
     };
+
+    static readonly publicKeyOfClient = readFileSync(`${join(__dirname, '../certs/files/publickeyofclient.pem')}`);
 
     /**
      * Register a new team to the mongo, and generates a JWT
@@ -31,31 +35,24 @@ export class AuthController {
      */
     public static async register(req: Request, res: Response) {
         const team = req.body.team as ITeam;
-        const passwordRegex: RegExp = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,50}$/;
 
         // If team parameter provided
         if (team) {
             team.teamname = team.teamname.toLowerCase();
 
-            let createdTeam: ITeam;
+            team.userIds = [];
+            team.adminIds = [];
+            team.adminIds.push(team.ownerId);
 
-            if (TeamValidator.isPasswordValid(team.password)) {
+            // Calls the function that creates the team in mongo.
+            const createdTeam: ITeam = await TeamRepository.create(team);
 
-                // Calls the function that creates the team in mongo.
-                createdTeam = await TeamRepository.create(team);
+            log(LOG_LEVEL.INFO, parseLogData(AuthController.AUTH_MESSAGES.SUCCESSFULLY_REGISTER,
+                                             'AuthController',
+                                             '200',
+                                             AuthController.AUTH_MESSAGES.NO_STACK));
 
-                // Sign the JWT token for a specified period of time (In seconds).
-                const token = jwt.sign({ id: createdTeam._id }, config.secret as string, {
-                    expiresIn: 600,
-                });
-
-                log(LOG_LEVEL.INFO, parseLogData(AuthController.AUTH_MESSAGES.SUCCESSFULLY_REGISTER,
-                                                 'AuthController',
-                                                 '200',
-                                                 AuthController.AUTH_MESSAGES.NO_STACK));
-
-                return res.status(200).send({ token, auth: true });
-            }
+            return res.status(200).send({ createdTeam, auth: true });
         }
 
         log(LOG_LEVEL.INFO, parseLogData(AuthController.AUTH_MESSAGES.INVALID_PARAMETER,
@@ -74,7 +71,7 @@ export class AuthController {
      */
     public static async authorize(req: Request, res: Response, next: NextFunction) {
         const token = req.headers['authorization'];
-        
+
         // If the token wasn't in the authorization header.
         if (!token) {
             log(LOG_LEVEL.WARN, parseLogData(AuthController.AUTH_MESSAGES.UNAUTHORIZED_NO_TOKEN,
@@ -87,20 +84,7 @@ export class AuthController {
 
         try {
             // Check if the token is valid and use the token's ID to find the specified team.
-            const jwtVerify: any = await jwt.verify(token, config.secret as string); // TODO; Make an interface for decoded jwt.
-            const returnedTeam: ITeam | null = await TeamRepository.findById(jwtVerify.id);
-
-            // Check if the token contains existing team
-            if (!returnedTeam) {
-                log(LOG_LEVEL.INFO, parseLogData(AuthController.AUTH_MESSAGES.UNAUTHORIZED_UNEXSISTING_TEAM,
-                                                 'AuthController',
-                                                 '401',
-                                                 AuthController.AUTH_MESSAGES.NO_STACK));
-
-                throw new Unauthorized(AuthController.AUTH_MESSAGES.UNAUTHORIZED_UNEXSISTING_TEAM);
-            }
-
-            req.teamId = jwtVerify.id;
+            req.person = await jwt.verify(token, AuthController.publicKeyOfClient.toString(), { algorithms: ['RS256'] });
 
             next();
         } catch (err) {
@@ -120,26 +104,11 @@ export class AuthController {
      * @param res - Response
      * @param next - Next
      */
-    public static async login(req: Request, res: Response) {
+    /*public static async login(req: Request, res: Response) {
         const teamReturned: ITeam | null = await TeamRepository.findByTeamname(req.body.team.teamname.toLowerCase());
 
         if (teamReturned) {
-            // Checks if the password is correct, using bcrypt compareSync function.
-            const passwordIsValid = bcrypt.compareSync(req.body.team.password, teamReturned.password);
-
-            if (!passwordIsValid) {
-                log(LOG_LEVEL.INFO, parseLogData(AuthController.AUTH_MESSAGES.INVALID_CREDENTIALS,
-                                                 'AuthController',
-                                                 '401',
-                                                 AuthController.AUTH_MESSAGES.NO_STACK));
-
-                throw new Unauthorized(AuthController.AUTH_MESSAGES.INVALID_CREDENTIALS);
-            }
-
-            // Generate a JWT token.
-            const token = jwt.sign({ id: teamReturned._id }, config.secret as string, { expiresIn: 600 });
-
-            log(LOG_LEVEL.INFO, parseLogData(AuthController.AUTH_MESSAGES.SUCCESSFULLY_LOGIN,
+            log(LOG_LEVEL.INFO, parseLogData(AuthController.AUTH_MESSAGES.SUCCESSFULLY_TEAM_CREATE,
                                              'AuthController',
                                              '200',
                                              AuthController.AUTH_MESSAGES.NO_STACK));
@@ -155,7 +124,7 @@ export class AuthController {
         // For the seek of information gathering techniques, we shouldn't give the user
         // information if he entered right teamname.
         throw new Unauthorized(AuthController.AUTH_MESSAGES.INVALID_CREDENTIALS);
-    }
+    }*/
 
     /**
      * Logout from a team.

@@ -8,7 +8,7 @@ export class TeamRouter {
 
     get router() {
         const router: Router = Router();
-        router.get('/', Wrapper.wrapAsync(TeamController.findById));
+        router.get('/:personid', Wrapper.wrapAsync(TeamController.findByUserId));
         router.put('/', Wrapper.wrapAsync(TeamController.update));
         router.post('/', Wrapper.wrapAsync(TeamController.create));
         router.delete('/:id', Wrapper.wrapAsync(TeamController.delete));

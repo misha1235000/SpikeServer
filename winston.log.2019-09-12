@@ -1,6 +1,0 @@
-{"service":"SpikeServer","hostname":"HOSTNAME","name":"AuthController","code":"401","stack":"No stack was found.","level":"warn","message":"Unauthorized, No token provided.","timestamp":"2019-09-12 10:12:23"}
-{"service":"SpikeServer","hostname":"HOSTNAME","name":"AuthController","code":"401","stack":"No stack was found.","level":"warn","message":"Unauthorized, No token provided.","timestamp":"2019-09-12 10:12:23"}
-{"service":"SpikeServer","hostname":"HOSTNAME","name":"AuthController","code":"401","stack":"No stack was found.","level":"info","message":"Incorrect teamname or password given.","timestamp":"2019-09-12 10:12:26"}
-{"service":"SpikeServer","hostname":"HOSTNAME","name":"AuthController","code":"200","stack":"No stack was found.","level":"info","message":"Successfully logged in.","timestamp":"2019-09-12 10:16:56"}
-{"service":"SpikeServer","hostname":"HOSTNAME","name":"ClientController","code":"200","stack":"No stack was found.","level":"info","message":"Client Successfully Created","timestamp":"2019-09-12 10:17:20"}
-{"service":"SpikeServer","hostname":"HOSTNAME","name":"AuthController","code":"401","stack":"No stack was found.","level":"warn","message":"Unauthorized, No token provided.","timestamp":"2019-09-12 14:17:27"}

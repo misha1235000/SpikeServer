@@ -5,9 +5,9 @@
 ## Install
 
 ```
-git clone https://github.com/misha1235000/serverRegisterServer.git
+git clone https://github.com/misha1235000/SpikeServer.git
 
-cd serverRegisterServer
+cd SpikeServer
 
 npm install
 ```

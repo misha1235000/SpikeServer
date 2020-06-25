@@ -13,6 +13,11 @@ const config = {
   PRIVATE_KEY_FILE_NAME: 'privatekey.pem',
   PUBLIC_KEY_FILE_NAME: 'publickey.pem',
   get PUBLIC_KEY_PATH() { return pathJoin(this.CERTIFICATES_PATH, this.PUBLIC_KEY_FILE_NAME) },
+
+  // Fuzzy db collections and fields to index
+  fuzzyCollections: [
+    { collectionName: 'clients', fields: ['name'] },
+  ],
 }
 
 module.exports = config;
