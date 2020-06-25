@@ -5,13 +5,21 @@ import { DuplicateUnique } from '../utils/error';
 import { ITeam } from './team.interface';
 
 export class TeamRepository {
+    /**
+     * Finds team by its id.
+     * @param teamId - The team id.
+     */
+    public static findById(teamId: string) {
+        return TeamModel.findOne({ _id: teamId });
+    }
 
     /**
-     * Finds a specific team by ID
-     * @param id - The id of a specific team.
+     * Finds a specific team by user ID
+     * @param userId - The id of a specific user.
      */
-    public static findById(id: string) {
-        return TeamModel.findOne({ _id: id }, { password: 0 });
+    public static findByUserId(userId: string) {
+        // return TeamModel.find({ userIds: id });
+        return TeamModel.find({ $or:[{ userIds: userId }, { adminIds: userId }] });
     }
 
     /**
@@ -31,6 +39,7 @@ export class TeamRepository {
             const createdTeam = await TeamModel.create(team);
             return createdTeam;
         } catch (error) {
+            console.log(error);
             if (error.code && error.code === 11000) {
                 throw new DuplicateUnique('Team name already exists.');
             } else {

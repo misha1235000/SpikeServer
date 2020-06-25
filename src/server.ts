@@ -22,7 +22,7 @@ const options = {
 };
 
 const server = https.createServer(options, App).listen(port, () => {
-    console.log('Spike Server listening on port ' + port + ' via HTTPS');
+    console.log(`Spike Server listening on port ${port} via HTTPS`);
 });
 
 export const Server = server;

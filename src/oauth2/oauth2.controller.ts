@@ -62,7 +62,7 @@ export class OAuth2Controller {
      *
      * @param clientInformation - Client information to register
      */
-    static async registerClient(clientInformation: IClientBasicInformation, teamId: string) {
+    static async registerClient(clientInformation: IClientBasicInformation) {
         // Register the client in the authorization server
         const response = await axios.post(
             config.authorizationServerAPI,

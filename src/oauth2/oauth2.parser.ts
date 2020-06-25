@@ -6,6 +6,8 @@ import { Forbidden } from '../auth/auth.error';
 
 export interface IClientBasicInformation {
     name: string;
+    teamId?: string;
+    teamName?: string;
     redirectUris: string[];
     hostUris: string[];
     scopes?: string[];
@@ -15,6 +17,7 @@ export interface IClientInformation extends IClientBasicInformation {
     id: string;
     secret: string;
     registrationToken: string;
+    audienceId: string;
 }
 
 // TODO: Proper implement parseResponse without strange return type
@@ -81,6 +84,7 @@ export class OAuth2Parser {
         return {
             redirectUris: clientInformation.redirectUris,
             secret: clientInformation.secret,
+            audienceId: clientInformation.audienceId,
             ...OAuth2Parser.parseClientInfoToModel(clientInformation),
         };
     }

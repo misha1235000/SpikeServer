@@ -5,8 +5,10 @@ import { OAuth2Controller } from '../oauth2/oauth2.controller';
 import { LOG_LEVEL, log, parseLogData } from '../utils/logger';
 import { IClientBasicInformation, IClientInformation, OAuth2Parser } from '../oauth2/oauth2.parser';
 import { ClientRepository } from './client.repository';
+import { TeamRepository } from '../team/team.repository';
 import { IClient } from './client.interface';
 import { InvalidParameter, NotFound, DuplicateUnique } from '../utils/error';
+import { Types } from 'mongoose';
 
 export class ClientController {
     static readonly CLIENT_MESSAGES = {
@@ -28,10 +30,13 @@ export class ClientController {
 
         // Gets the client information required for register client in authorization server.
         const clientInformation = req.body.clientInformation as IClientBasicInformation;
-        const teamId = req.teamId;
+        const teamId = clientInformation.teamId;
+        const teamName = clientInformation.teamName;
+        delete clientInformation.teamId;
+        delete clientInformation.teamName;
 
         // If there is clientInformation (data) and there is a teamId, then proceed.
-        if (clientInformation && teamId) {
+        if (clientInformation) {
             // Set the all the host uris, to lower case.
             clientInformation.hostUris = clientInformation.hostUris.map(hostUri => hostUri.toLowerCase());
 
@@ -40,7 +45,9 @@ export class ClientController {
                                      clientInformation.name.substr(1).toLowerCase();
 
             // Creates the client in OSpike first
-            const registeredClient = await OAuth2Controller.registerClient(clientInformation, teamId);
+            const registeredClient = await OAuth2Controller.registerClient(clientInformation);
+
+            // Recover the deleted key - team
 
             // Creates the client in the Spike Server db
             await ClientRepository.create({ teamId, ...registeredClient });
@@ -50,6 +57,8 @@ export class ClientController {
                                              '200',
                                              ClientController.CLIENT_MESSAGES.NO_STACK));
 
+            registeredClient.teamId = teamId;
+            registeredClient.teamName = teamName;
             return res.status(200).send(registeredClient);
         }
 
@@ -70,16 +79,15 @@ export class ClientController {
 
         // Gets the client's id to read
         const clientId = req.params.clientId;
-        const teamId = req.teamId;
 
-        if (clientId && teamId) {
+        if (clientId) {
 
             // Getting the client registration token associated to the client
             const clientDoc = await ClientRepository.findById(clientId);
 
             // Checks if the client is unexist or client not associated to the team
             // (we do that to avoid exposing our db to user who performs information gathering attacks)
-            if (!clientDoc || clientDoc.teamId !== teamId) {
+            if (!clientDoc) {
                 log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER,
                                                  'ClientController',
                                                  '400',
@@ -88,7 +96,9 @@ export class ClientController {
                 throw new InvalidParameter(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER);
             }
 
-            return res.status(200).send(await OAuth2Controller.readClientInformation(clientId, clientDoc.token));
+            const clientAfterRead = await OAuth2Controller.readClientInformation(clientId, clientDoc.token);
+            clientAfterRead.teamId = clientDoc.teamId;
+            return res.status(200).send(clientAfterRead);
         }
 
         log(LOG_LEVEL.INFO, parseLogData(this.CLIENT_MESSAGES.INVALID_PARAMETER,
@@ -106,10 +116,12 @@ export class ClientController {
      */
 
     public static async findByToken(req: Request, res: Response) {
-        const id = req.teamId;
-
-        if (id) {
-            const returnedClients: IClient[] | null = await ClientRepository.findByTeamId(id);
+        const jwtToken = (req.headers['authorization'] as string).split('.')[1];
+        const jwtDecrypt = JSON.parse(Buffer.from(jwtToken, 'base64').toString());
+        const teams = await TeamRepository.findByUserId(jwtDecrypt.genesisId);
+        if (teams) {
+            const teamIds = teams.map((team) => { return Types.ObjectId(team._id); });
+            const returnedClients: IClient[] | null = await ClientRepository.findByTeamIds(teamIds);
 
             if (!returnedClients) {
                 log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.CLIENT_NOT_FOUND,
@@ -141,16 +153,15 @@ export class ClientController {
         // Gets the client information required for register client in authorization server
         const clientInformation = req.body.clientInformation as Partial<IClientBasicInformation>;
         const clientId = req.params.clientId;
-        const teamId = req.teamId;
 
-        if (Object.keys(clientInformation).length > 0 && clientId && teamId) {
+        if (Object.keys(clientInformation).length > 0 && clientId) {
 
             // Getting the client registration token associated to the client
             const clientDoc = await ClientRepository.findById(clientId);
 
             // Checks if the client is unexist or client not associated to the team
             // (we do that to avoid exposing our db to user who performs information gathering attacks)
-            if (!clientDoc || clientDoc.teamId !== teamId) {
+            if (!clientDoc) {
                 log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER,
                                                  'ClientController',
                                                  '400',
@@ -198,16 +209,15 @@ export class ClientController {
      */
     public static async reset(req: Request, res: Response) {
         const clientId = req.params.clientId;
-        const teamId = req.teamId;
 
-        if (clientId && teamId) {
+        if (clientId) {
 
             // Getting the client registration token associated to the client
             const clientDoc = await ClientRepository.findById(clientId);
 
             // Checks if the client is unexist or client not associated to the team
             // (we do that to avoid exposing our db to user who performs information gathering attacks)
-            if (!clientDoc || clientDoc.teamId !== teamId) {
+            if (!clientDoc) {
                 log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER,
                                                  'ClientController',
                                                  '400',
@@ -218,15 +228,15 @@ export class ClientController {
 
             // Resetting client credentials and update in local db
             const updatedClient = await OAuth2Controller.resetClientCredentials(clientId, clientDoc.token);
-            await ClientRepository.update(clientId, { clientId: updatedClient.clientId });
+            // await ClientRepository.update(clientId, { clientId: updatedClient.clientId });
 
             return res.status(200).send(updatedClient);
         }
 
         log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER,
-            'ClientController',
-            '400',
-            ClientController.CLIENT_MESSAGES.NO_STACK));
+                                         'ClientController',
+                                         '400',
+                                         ClientController.CLIENT_MESSAGES.NO_STACK));
 
         throw new InvalidParameter(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER);
     }
@@ -238,16 +248,15 @@ export class ClientController {
      */
     public static async delete(req: Request, res: Response) {
         const clientId = req.params.clientId;
-        const teamId = req.teamId;
 
-        if (clientId && teamId) {
+        if (clientId) {
 
             // Getting the client registration token associated to the client
             const clientDoc = await ClientRepository.findById(clientId);
 
             // Checks if the client is unexist or client not associated to the team
             // (we do that to avoid exposing our db to user who performs information gathering attacks)
-            if (!clientDoc || clientDoc.teamId !== teamId) {
+            if (!clientDoc) {
                 log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER,
                                                  'ClientController',
                                                  '400',

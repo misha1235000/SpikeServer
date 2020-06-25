@@ -1,7 +1,8 @@
 // team.validator
 
 import { ITeam } from './team.interface';
-import { InvalidTeamname, InvalidPassword } from './team.error';
+import { InvalidTeamname, InvalidTeamInformation } from './team.error';
+import { ObjectId } from 'mongodb';
 
 export class TeamValidator {
     static isValid(team: ITeam): boolean {
@@ -18,13 +19,13 @@ export class TeamValidator {
         throw new InvalidTeamname('Teamname Invalid. 4 - 20 characters, contains letters or numbers');
     }
 
-    static isPasswordValid(password: string): boolean {
-        const passwordRegex: RegExp = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,50}$/;
-
-        if (!passwordRegex.test(password)) {
-            throw new InvalidPassword('Password Invalid. 8 - 50 characters, at least one letter, one number and one special character');
-        } else {
-            return true;
+    static isTeamIdsValid(teamIds: string[]): boolean {
+        for (const teamId of teamIds) {
+            if (!ObjectId.isValid(teamId)) {
+                throw new InvalidTeamInformation('Teamname Invalid. 4 - 20 characters, contains letters or numbers');
+            }
         }
+
+        return true;
     }
 }
