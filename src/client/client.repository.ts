@@ -30,6 +30,18 @@ export class ClientRepository {
     }
 
     /**
+     * Fuzzy searching clients by name.
+     * @param clientName - Client name to search
+     * @param selectFields - Selection fields to include/exclude from returning object (Like in mongoose queries)
+     * @param population - Population field in object, which indicates which field to populate (Like in mongoose queries)
+     */
+    public static searchByName(clientName: string,
+                               selectFields: string = 'name description',
+                               population: { path: string, select: string } =  { path: 'teamId', select: 'teamname' }) {
+        return (ClientModel as any).fuzzySearch(clientName).select(selectFields).populate(population);
+    }
+
+    /**
      * Creates a new client.
      * @param client - The client to create
      */

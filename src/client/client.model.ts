@@ -1,5 +1,6 @@
 // client.model
 
+const fuzzySearching = require('mongoose-fuzzy-searching');
 import { model, Schema } from 'mongoose';
 import { IClient } from './client.interface';
 import { ClientValidator } from './client.validator';
@@ -47,5 +48,7 @@ ClientSchema.methods.toJSON = function () {
     delete obj.token;
     return obj;
 };
+
+ClientSchema.plugin(fuzzySearching, { fields: ['name'] });
 
 export const ClientModel = model<IClient>('Client', ClientSchema);

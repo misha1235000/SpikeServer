@@ -144,6 +144,22 @@ export class ClientController {
     }
 
     /**
+     * Fuzzy searching client by name.
+     * @param req - Request
+     * @param res - Response
+     */
+    public static async searchByName(req: Request, res: Response) {
+        // Check if name is given
+        if (req.query.name) {
+            const clients = await ClientRepository.searchByName(req.query.name);
+            return clients;
+        }
+
+        // Name is not given, return nothing
+        return [];
+    }
+
+    /**
      * Updates an old client with a new one.
      * @param req - Request
      * @param res - Response
