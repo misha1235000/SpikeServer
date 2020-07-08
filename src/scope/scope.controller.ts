@@ -9,6 +9,8 @@ import { IClient } from '../client/client.interface';
 import { InvalidParameter, NotFound } from '../utils/error';
 import { Types } from 'mongoose';
 import { ScopeRepository } from './scope.repository';
+import { IScope } from './scope.interface';
+import { ITeam } from '../team/team.interface';
 
 export class ScopeController {
 
@@ -42,7 +44,7 @@ export class ScopeController {
                 const scopes = await ScopeRepository.findByClientIds(returnedClients.map(client => client.clientId));
 
                 if (scopes) {
-                    return res.status(200).send(scopes);
+                    return res.status(200).send(scopes.map(scope => ScopeController.parseScopeData(scope)));
                 }
             }
 
@@ -80,7 +82,7 @@ export class ScopeController {
             const scope = await ScopeRepository.findById(scopeId);
 
             if (scope) {
-                return res.status(200).send(scope);
+                return res.status(200).send(ScopeController.parseScopeData(scope));
             }
 
             // Scope not found
@@ -134,7 +136,7 @@ export class ScopeController {
             await OAuth2Controller.createScope(scopeInformation, ownerClient.token);
             const createdScope = await ScopeRepository.create(scopeInformation);
 
-            return res.status(200).send(createdScope);
+            return res.status(201).send(ScopeController.parseScopeData(createdScope));
         }
 
         // Scope information field not provided, invalid request
@@ -179,7 +181,7 @@ export class ScopeController {
             // Scope exists, update it in oauth server and locally
             await OAuth2Controller.updateScope(scopeId, scopeInformation, (fullScope.clientId as IClient).token);
             const updatedScope = await ScopeRepository.update((fullScope.clientId as IClient).clientId, fullScope.value, scopeInformation);
-            return res.status(200).send(updatedScope);
+            return res.status(200).send(ScopeController.parseScopeData(updatedScope as IScope));
         }
 
         // Scope id field or scope information not provided, invalid request
@@ -240,5 +242,20 @@ export class ScopeController {
         );
 
         throw new InvalidParameter(ScopeController.SCOPE_MESSAGES.ID_PARAMETER_MISSING);
+    }
+
+    /**
+     * Parsing scope information to readable format for web client
+     * @param scopeData - Scope information to parse
+     */
+    private static parseScopeData(scopeData: IScope) {
+        return {
+            ...scopeData,
+            client: {
+                clientId: (scopeData.clientId as IClient).clientId,
+                name: (scopeData.clientId as IClient).name,
+            },
+            teamname: ((scopeData.clientId as IClient).teamId as ITeam).teamname,
+        };
     }
 }

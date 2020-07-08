@@ -10,7 +10,7 @@ export class ClientValidator {
     static isValid(client: IClient): boolean {
         return client && ClientValidator.isClientIdValid(client.clientId) &&
                        ClientValidator.isTokenValid(client.token) &&
-                       ClientValidator.isTeamIdValid(client.teamId) &&
+                       ClientValidator.isTeamIdValid(client.teamId as string) &&
                        ClientValidator.isNameValid(client.name) &&
                        ClientValidator.isHostnameValid(client.hostUris);
     }

@@ -5,7 +5,7 @@ import { IScope } from './scope.interface';
 
 export class ScopeRepository {
 
-    private static readonly defaultPopulation = { path: 'clientId', select: 'name description', populate: { path: 'teamId',  select: 'teamname' } };
+    private static readonly defaultPopulation = { path: 'client', select: 'name', populate: { path: 'teamId',  select: 'teamname' } };
 
     /**
      * Find all scopes belonging to the clients ids provided.
@@ -71,7 +71,6 @@ export class ScopeRepository {
                     creator: 1,
                     clientId: {
                         name: 1,
-                        description: 1,
                         clientId: 1,
                         teamId: {
                             teamname: 1,

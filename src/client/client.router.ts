@@ -12,6 +12,7 @@ export class ClientRouter {
         router.get('/search', Wrapper.wrapAsync(ClientController.searchByName));
         router.put('/:clientId', Wrapper.wrapAsync(ClientController.update));
         router.post('/', Wrapper.wrapAsync(ClientController.create));
+        router.post('/search', Wrapper.wrapAsync(ClientController.findByIds));
         router.patch('/:clientId', Wrapper.wrapAsync(ClientController.reset));
         router.delete('/:clientId', Wrapper.wrapAsync(ClientController.delete));
 

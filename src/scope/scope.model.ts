@@ -53,6 +53,13 @@ const ScopeSchema = new Schema(
     },
 );
 
+ScopeSchema.virtual('client', {
+    ref: 'Client',
+    localField: 'clientId',
+    foreignField: 'clientId',
+    justOne: true,
+});
+
 // Ensures there's only one unique scope value for unique client
 ScopeSchema.index({ name: 1, client: 1 }, { unique: true });
 

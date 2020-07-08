@@ -15,6 +15,7 @@ export class ClientController {
         INVALID_PARAMETER: 'Client information or team id parameter is missing.',
         CLIENT_NOT_FOUND: 'Clients not found.',
         ID_PARAMETER_MISSING: 'id Parameter is missing.',
+        CLIENT_IDS_PARAMETER_MISSING: 'Client ids parameter is missing.',
         DUPLICATE_HOSTURI: 'Duplicate hostUri Was Given.',
         NO_STACK: 'No stack was found.',
         SUCCESSFULLY_CREATED: 'Client Successfully Created',
@@ -144,6 +145,32 @@ export class ClientController {
     }
 
     /**
+     * Find many clients by ids array
+     * @param req - Request
+     * @param res - Response
+     */
+    public static async findByIds(req: Request, res: Response) {
+        const clientIds = req.body.clientIds;
+
+        // Check if client ids provided
+        if (clientIds) {
+            return res.status(200).send(await ClientRepository.findByIds(clientIds));
+        }
+
+        // Client ids parameter missing
+        log(LOG_LEVEL.INFO,
+            parseLogData(
+                ClientController.CLIENT_MESSAGES.CLIENT_IDS_PARAMETER_MISSING,
+                'ClientController',
+                '400',
+                ClientController.CLIENT_MESSAGES.NO_STACK,
+            ),
+        );
+
+        throw new InvalidParameter(ClientController.CLIENT_MESSAGES.CLIENT_IDS_PARAMETER_MISSING);
+    }
+
+    /**
      * Fuzzy searching client by name.
      * @param req - Request
      * @param res - Response
@@ -152,7 +179,7 @@ export class ClientController {
         // Check if name is given
         if (req.query.name) {
             const clients = await ClientRepository.searchByName(req.query.name);
-            return clients;
+            return res.status(200).send(clients);
         }
 
         // Name is not given, return nothing
