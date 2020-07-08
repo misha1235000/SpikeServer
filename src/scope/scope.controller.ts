@@ -250,12 +250,16 @@ export class ScopeController {
      */
     private static parseScopeData(scopeData: IScope) {
         return {
-            ...scopeData,
+            value: scopeData.value,
+            type: scopeData.type,
+            description: scopeData.description,
+            creator: scopeData.creator,
+            permittedClients: scopeData.permittedClients,
             client: {
-                clientId: (scopeData.clientId as IClient).clientId,
-                name: (scopeData.clientId as IClient).name,
+                clientId: (scopeData.client as IClient).clientId,
+                name: (scopeData.client as IClient).name,
             },
-            teamname: ((scopeData.clientId as IClient).teamId as ITeam).teamname,
+            teamname: ((scopeData.client as IClient).teamId as ITeam).teamname,
         };
     }
 }
