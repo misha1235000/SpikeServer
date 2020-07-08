@@ -2,30 +2,44 @@
 
 import { Schema, model } from 'mongoose';
 import { IScope, ScopeType } from './scope.interface';
+import { ScopeValidator } from './scope.validator';
 
 const ScopeSchema = new Schema(
     {
-        name: {
+        value: {
             type: String,
             required: true,
+            validate: [ScopeValidator.isScopeValueValid, 'Scope value is not valid'],
         },
-        client: {
+        clientId: {
             type: String,
             ref: 'Client',
             required: true,
+            validator: {
+                isAsync: true,
+                validator: ScopeValidator.isClientIdValid,
+                message: 'Client id not refer existing client',
+            },
         },
         permittedClients: {
             type: [{ type: Schema.Types.ObjectId, ref: 'Client' }],
             required: true,
             default: [],
+            validator: {
+                isAsync: true,
+                validator: ScopeValidator.isClientIdValid,
+                message: 'Client id not refer existing client',
+            },
         },
         creator: {
             type: String,
             required: true,
+            validate: [ScopeValidator.isCreatorValid, 'Creator is not valid'],
         },
         description: {
             type: String,
             default: 'No description provided',
+            validate: [ScopeValidator.isDescriptionValid, 'Creator is not valid'],
         },
         type: {
             type: String,

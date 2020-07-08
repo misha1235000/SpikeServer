@@ -16,6 +16,14 @@ export class ClientRepository {
     }
 
     /**
+     * Find clients by clients ids list
+     * @param clientIds - Client ids of specific clients.
+     */
+    public static findByIds(clientIds: string[]) {
+        return ClientModel.find({ clientId: { $in: clientIds } });
+    }
+
+    /**
      * Finds all the clients of a specified team.
      * @param teamId - The id of a specific team.
      */

@@ -18,6 +18,7 @@ import * as passport from 'passport';
 import * as cookieParser from 'cookie-parser';
 import * as session from 'express-session';
 import { TeamRepository } from './team/team.repository';
+import { ScopeRouter } from './scope/scope.router';
 
 const app = express();
 
@@ -88,6 +89,7 @@ app.use('/api/auth', new AuthRouter().router);
 app.use('/api/client', new ClientRouter().router);
 app.use('/api/team', new TeamRouter().router);
 app.use('/api/person', new PersonRouter().router);
+app.use('/api/scope', new ScopeRouter().router);
 
 // Error handler
 app.use(errorHandler);
