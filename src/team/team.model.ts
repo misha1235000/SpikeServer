@@ -4,7 +4,6 @@ import { model, Schema } from 'mongoose';
 import { ITeam } from './team.interface';
 import { TeamValidator } from './team.validator';
 import { MissingUsers } from './team.error';
-import { hashSync } from 'bcrypt';
 
 const TeamSchema = new Schema({
     ownerId: {
@@ -33,14 +32,6 @@ const TeamSchema = new Schema({
         required: false,
     },
 });
-
-/**
- * Generates hash for password given
- * @param password - password to hash
- */
-const generatePasswordHash = (password: string) => {
-    return hashSync(password, 8);
-};
 
 // Virtual field for getting all the clients of specific team
 // Used via population as described in https://mongoosejs.com/docs/populate.html#populate-virtuals
