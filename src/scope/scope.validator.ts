@@ -8,7 +8,7 @@ import { ClientRepository } from '../client/client.repository';
 export class ScopeValidator {
 
     static isValid(scope: IScope): boolean {
-        return scope && ScopeValidator.isClientIdValid(scope.clientId as string) &&
+        return scope && ScopeValidator.isAudienceIdValid(scope.audienceId as string) &&
                         ScopeValidator.isPermittedClientsValid(scope.permittedClients) &&
                         ScopeValidator.isScopeValueValid(scope.value) &&
                         ScopeValidator.isDescriptionValid(scope.description) &&
@@ -17,6 +17,16 @@ export class ScopeValidator {
 
     static async isClientIdValid(clientId: string) {
         const returnedClient = await ClientRepository.findById(clientId);
+
+        if (returnedClient) {
+            return true;
+        }
+
+        throw new NotFound('Client not found.');
+    }
+
+    static async isAudienceIdValid(audienceId: string) {
+        const returnedClient = await ClientRepository.findByAudienceId(audienceId);
 
         if (returnedClient) {
             return true;

@@ -18,6 +18,14 @@ export class ClientRepository {
     }
 
     /**
+     * Finds a client by Audience ID
+     * @param audienceId - Audience id of the specific client.
+     */
+    public static findByAudienceId(audienceId: string) {
+        return ClientModel.findOne({ audienceId });
+    }
+
+    /**
      * Find clients by clients ids list
      * @param clientIds - Client ids of specific clients.
      */
@@ -46,8 +54,8 @@ export class ClientRepository {
      * @param population - Population field in object, which indicates which field to populate (Like in mongoose queries)
      */
     public static searchByName(clientName: string,
-                               selectFields: string = 'name description',
-                               population: { path: string, select: string } =  { path: 'teamId', select: 'teamname' }) {
+                               selectFields: string = 'name description clientId',
+                               population: { path: string, select: string } =  ClientRepository.defaultPopulation) {
         return (ClientModel as any).fuzzySearch(clientName).select(selectFields).populate(population);
     }
 

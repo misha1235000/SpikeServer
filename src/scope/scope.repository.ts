@@ -5,15 +5,24 @@ import { IScope } from './scope.interface';
 
 export class ScopeRepository {
 
-    private static readonly defaultPopulation = { path: 'client', select: 'name', populate: { path: 'teamId',  select: 'teamname' } };
+    private static readonly defaultPopulation = { path: 'client', select: 'clientId name', populate: { path: 'teamId',  select: 'teamname' } };
+
+    // /**
+    //  * Find all scopes belonging to the clients ids provided.
+    //  * @param clientIds - Arrays of client ids
+    //  * @param population - (Optional) Population field to populate after query
+    //  */
+    // public static async findByClientIds(clientIds: string[], population: any = ScopeRepository.defaultPopulation) {
+    //     return await ScopeModel.find({ clientId: { $in: clientIds } }).populate(population);
+    // }
 
     /**
-     * Find all scopes belonging to the clients ids provided.
-     * @param clientIds - Arrays of client ids
+     * Find all scopes belonging to the audience ids provided.
+     * @param clientIds - Arrays of audience ids
      * @param population - (Optional) Population field to populate after query
      */
-    public static async findByClientIds(clientIds: string[], population: any = ScopeRepository.defaultPopulation) {
-        return await ScopeModel.find({ clientId: { $in: clientIds } }).populate(population);
+    public static async findByAudienceIds(audienceIds: string[], population: any = ScopeRepository.defaultPopulation) {
+        return await ScopeModel.find({ audienceId: { $in: audienceIds } }).populate(population);
     }
 
     /**
@@ -34,32 +43,32 @@ export class ScopeRepository {
             {
                 $lookup: {
                     from: 'clients',
-                    localField: 'clientId',
-                    foreignField: 'clientId',
-                    as: 'clientId',
+                    localField: 'audienceId',
+                    foreignField: 'audienceId',
+                    as: 'client',
                 },
             },
             {
                 $unwind: {
-                    path: '$clientId',
+                    path: '$client',
                 },
             },
             {
                 $match: {
-                    'clientId.name': clientName,
+                    'client.name': clientName,
                 },
             },
             {
                 $lookup: {
                     from: 'teams',
-                    localField: 'clientId.teamId',
+                    localField: 'client.teamId',
                     foreignField: '_id',
-                    as: 'clientId.teamId',
+                    as: 'client.teamId',
                 },
             },
             {
                 $unwind: {
-                    path: '$clientId.teamId',
+                    path: '$client.teamId',
                 },
             },
             {
@@ -69,9 +78,10 @@ export class ScopeRepository {
                     description: 1,
                     permittedClients: 1,
                     creator: 1,
-                    clientId: {
+                    audienceId: 1,
+                    client: {
                         name: 1,
-                        clientId: 1,
+                        clientId: 1,                        
                         teamId: {
                             teamname: 1,
                         },
@@ -81,23 +91,42 @@ export class ScopeRepository {
         ]);
     }
 
-    /**
-     * Find scopes by the client id of the scope owner.
-     * @param clientId - Client ID of the scope owner
-     * @param population - (Optional) Population field to populate after query
-     */
-    public static async findByClientId(clientId: string, population: any = ScopeRepository.defaultPopulation) {
-        return await ScopeModel.find({ clientId }).populate(population);
-    }
+    // /**
+    //  * Find scopes by the client id of the scope owner.
+    //  * @param clientId - Client ID of the scope owner
+    //  * @param population - (Optional) Population field to populate after query
+    //  */
+    // public static async findByClientId(clientId: string, population: any = ScopeRepository.defaultPopulation) {
+    //     return await ScopeModel.find({ clientId }).populate(population);
+    // }
 
     /**
-     * Find scope by the client id of the scope owner and scope name.
-     * @param clientId - Client ID of the scope owner
+     * Find scopes by the audience id of the scope owner.
+     * @param audienceId - Audience ID of the scope owner.
+     * @param population - (Optional) Population field to populate after query
+     */
+    public static async findByAudienceId(audienceId: string, population: any = ScopeRepository.defaultPopulation) {
+        return await ScopeModel.find({ audienceId }).populate(population);
+    }
+
+    // /**
+    //  * Find scope by the client id of the scope owner and scope name.
+    //  * @param clientId - Client ID of the scope owner
+    //  * @param scopeName - Name of the scope
+    //  * @param population - (Optional) Population field to populate after query
+    //  */
+    // public static async findByClientIdAndScopeName(clientId: string, scopeName: string, population: any = ScopeRepository.defaultPopulation) {
+    //     return await ScopeModel.findOne({ clientId, value: scopeName }).populate(population);
+    // }
+
+    /**
+     * Find scope by the audience id of the scope owner and scope name.
+     * @param audienceId - Audience ID of the scope owner
      * @param scopeName - Name of the scope
      * @param population - (Optional) Population field to populate after query
      */
-    public static async findByClientIdAndScopeName(clientId: string, scopeName: string, population: any = ScopeRepository.defaultPopulation) {
-        return await ScopeModel.findOne({ clientId, value: scopeName }).populate(population);
+    public static async findByAudienceIdAndScopeName(audienceId: string, scopeName: string, population: any = ScopeRepository.defaultPopulation) {
+        return await ScopeModel.findOne({ audienceId, value: scopeName }).populate(population);
     }
 
     /**
@@ -106,19 +135,31 @@ export class ScopeRepository {
      * @param population - (Optional) Population field to populate after query
      */
     public static async create(scope: IScope, population: any = ScopeRepository.defaultPopulation) {
-        return await (await ScopeModel.create(scope)).populate(population);
+        return await (await ScopeModel.create(scope)).populate(population).execPopulate();
     }
+
+    // /**
+    //  * Updates existing scope.
+    //  * @param clientId - Client id of the scope owner.
+    //  * @param scopeName - Name of the scope.
+    //  * @param updateScope - Scope information to update.
+    //  * @param population - (Optional) Population field to populate after query
+    //  */
+    // public static async update(clientId: string, scopeName: string, updateScope: Partial<IScope>, population: any = ScopeRepository.defaultPopulation) {
+    //     return await ScopeModel.findOneAndUpdate({ clientId, value: scopeName }, updateScope, { new: true, runValidators: true }).populate(population);
+    // }
 
     /**
      * Updates existing scope.
-     * @param clientId - Client id of the scope owner.
+     * @param audienceId - Audience id of the scope owner.
      * @param scopeName - Name of the scope.
      * @param updateScope - Scope information to update.
      * @param population - (Optional) Population field to populate after query
      */
-    public static async update(clientId: string, scopeName: string, updateScope: Partial<IScope>, population: any = ScopeRepository.defaultPopulation) {
-        return await ScopeModel.findOneAndUpdate({ clientId, value: scopeName }, updateScope, { new: true, runValidators: true }).populate(population);
+    public static async update(audienceId: string, scopeName: string, updateScope: Partial<IScope>, population: any = ScopeRepository.defaultPopulation) {
+        return await ScopeModel.findOneAndUpdate({ audienceId, value: scopeName }, updateScope, { new: true, runValidators: true }).populate(population);
     }
+
 
     /**
      * Delete scope by a scope ObjectID.

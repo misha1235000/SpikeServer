@@ -11,14 +11,13 @@ const ScopeSchema = new Schema(
             required: true,
             validate: [ScopeValidator.isScopeValueValid, 'Scope value is not valid'],
         },
-        clientId: {
+        audienceId: {
             type: String,
-            ref: 'Client',
             required: true,
             validator: {
                 isAsync: true,
-                validator: ScopeValidator.isClientIdValid,
-                message: 'Client id not refer existing client',
+                validator: ScopeValidator.isAudienceIdValid,
+                message: 'Audience id not refer existing client',
             },
         },
         permittedClients: {
@@ -27,7 +26,7 @@ const ScopeSchema = new Schema(
             default: [],
             validator: {
                 isAsync: true,
-                validator: ScopeValidator.isClientIdValid,
+                validator: ScopeValidator.isPermittedClientsValid,
                 message: 'Client id not refer existing client',
             },
         },
@@ -55,13 +54,13 @@ const ScopeSchema = new Schema(
 
 ScopeSchema.virtual('client', {
     ref: 'Client',
-    localField: 'clientId',
-    foreignField: 'clientId',
+    localField: 'audienceId',
+    foreignField: 'audienceId',
     justOne: true,
 });
 
 // Ensures there's only one unique scope value for unique client
-ScopeSchema.index({ name: 1, client: 1 }, { unique: true });
+ScopeSchema.index({ value: 1, audienceId: 1 }, { unique: true });
 
 const ScopeModel = model<IScope>('Scope', ScopeSchema);
 

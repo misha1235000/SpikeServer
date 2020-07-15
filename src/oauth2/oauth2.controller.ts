@@ -178,12 +178,13 @@ export class OAuth2Controller {
      * Create new scope in authorization server for specific client.
      * @param scopeInformation - Scope information to create a scope
      * @param clientToken - Client token for managing the client
+     * @param clientId - Client id of the scope owner.
      */
-    static async createScope(scopeInformation: IScopeBasicInformation, clientToken: string) {
+    static async createScope(scopeInformation: IScopeBasicInformation, clientToken: string, clientId: string) {
 
         // Create scope in oauth server for the client
         const response = await axios.post(
-            `${config.OAUTH_MANAGEMENT_ENDPOINT}/${config.OAUTH_SCOPE_MANAGEMENT_ENDPOINT}`,
+            `${config.OAUTH_MANAGEMENT_ENDPOINT}/${config.OAUTH_SCOPE_MANAGEMENT_ENDPOINT}/${clientId}`,
             { scopeInformation },
             {
                 headers: {
@@ -219,13 +220,15 @@ export class OAuth2Controller {
     }
 
     /**
-     * Delete scope which belongs to specific client.
-     * @param scopeId - Scope id of the scope to delete.
+     * Delete scope which belongs to specific client.    
+     * @param clientId - Client id of the scope owner. 
      * @param clientToken - Client token for managing the client.
+     * @param audienceId - Audience id of the scope owner.
+     * @param value - Scope value.
      */
-    static async deleteScope(scopeId: string, clientToken: string) {
+    static async deleteScope(clientId: string, clientToken: string, audienceId: string, value: string) {
         const response = await axios.delete(
-            `${config.OAUTH_MANAGEMENT_ENDPOINT}/${config.OAUTH_SCOPE_MANAGEMENT_ENDPOINT}/${scopeId}`,
+            `${config.OAUTH_MANAGEMENT_ENDPOINT}/${config.OAUTH_SCOPE_MANAGEMENT_ENDPOINT}/?clientId=${clientId}&audienceId=${audienceId}&value=${value}`,
             {
                 headers: {
                     'Authorization-Registrer': await OAuth2Controller.getToken(),

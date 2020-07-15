@@ -21,6 +21,7 @@ export class ScopeController {
         SCOPE_INFORMATION_MISSING: 'Scope information parameter is missing.',
         ID_OR_INFORMATION_MISSING: 'Scope id or scope information parameter is missing.',
         CLIENT_ID_INVALID: 'Client id parameter is invalid.',
+        AUDIENCE_ID_INVALID: 'Audience id parameter is invalid.',
         NO_STACK: 'No stack was found.',
     };
 
@@ -41,7 +42,7 @@ export class ScopeController {
 
             // If there's clients, getting all their scopes
             if (returnedClients) {
-                const scopes = await ScopeRepository.findByClientIds(returnedClients.map(client => client.clientId));
+                const scopes = await ScopeRepository.findByAudienceIds(returnedClients.map(client => client.audienceId));
 
                 if (scopes) {
                     return res.status(200).send(scopes.map(scope => ScopeController.parseScopeData(scope)));
@@ -123,19 +124,17 @@ export class ScopeController {
 
         // If scope information is given
         if (scopeInformation) {
-
             // Get the token of the client owner
-            const ownerClient = await ClientRepository.findById(scopeInformation.clientId);
+            const ownerClient = await ClientRepository.findByAudienceId(scopeInformation.audienceId);
 
             // If referenced non existing client
             if (!ownerClient) {
-                throw new InvalidParameter(ScopeController.SCOPE_MESSAGES.CLIENT_ID_INVALID);
+                throw new InvalidParameter(ScopeController.SCOPE_MESSAGES.AUDIENCE_ID_INVALID);
             }
 
             // Create the scope in the oauth2 server and locally
-            await OAuth2Controller.createScope(scopeInformation, ownerClient.token);
+            await OAuth2Controller.createScope(scopeInformation, ownerClient.token, ownerClient.clientId);
             const createdScope = await ScopeRepository.create(scopeInformation);
-
             return res.status(201).send(ScopeController.parseScopeData(createdScope));
         }
 
@@ -166,7 +165,7 @@ export class ScopeController {
         if (scopeId && Object.keys(scopeInformation).length > 0) {
 
             // First, get the scope and acquire the client token
-            const fullScope = await ScopeRepository.findById(scopeId, { path: 'clientId', select: 'token' });
+            const fullScope = await ScopeRepository.findById(scopeId, { path: 'client', select: 'token' });
 
             // Scope is not found
             if (!fullScope) {
@@ -179,8 +178,8 @@ export class ScopeController {
             }
 
             // Scope exists, update it in oauth server and locally
-            await OAuth2Controller.updateScope(scopeId, scopeInformation, (fullScope.clientId as IClient).token);
-            const updatedScope = await ScopeRepository.update((fullScope.clientId as IClient).clientId, fullScope.value, scopeInformation);
+            await OAuth2Controller.updateScope(scopeId, scopeInformation, (fullScope.audienceId as IClient).token);
+            const updatedScope = await ScopeRepository.update((fullScope.audienceId as IClient).clientId, fullScope.value, scopeInformation);
             return res.status(200).send(ScopeController.parseScopeData(updatedScope as IScope));
         }
 
@@ -211,7 +210,7 @@ export class ScopeController {
         if (scopeId) {
 
             // Acquire full scope properties including client reference details
-            const fullScope = await ScopeRepository.findById(scopeId);
+            const fullScope = await ScopeRepository.findById(scopeId, { path: 'client', select: 'clientId token' });
 
             // If the scope not exists, throw not found
             if (!fullScope) {
@@ -222,9 +221,9 @@ export class ScopeController {
 
                 throw new NotFound(ScopeController.SCOPE_MESSAGES.SCOPE_NOT_FOUND);
             }
-
+            
             // First delete the scope in the oauth server, and after it delete locally
-            await OAuth2Controller.deleteScope(scopeId, (fullScope.clientId as IClient).token);
+            await OAuth2Controller.deleteScope((fullScope.client as IClient).clientId, (fullScope.client as IClient).token, fullScope.audienceId as string, fullScope.value);
             await ScopeRepository.delete(scopeId);
 
             return res.sendStatus(204);
@@ -250,11 +249,13 @@ export class ScopeController {
      */
     private static parseScopeData(scopeData: IScope) {
         return {
+            id: scopeData._id,
             value: scopeData.value,
             type: scopeData.type,
             description: scopeData.description,
             creator: scopeData.creator,
             permittedClients: scopeData.permittedClients,
+            audienceId: scopeData.audienceId,
             client: {
                 clientId: (scopeData.client as IClient).clientId,
                 name: (scopeData.client as IClient).name,

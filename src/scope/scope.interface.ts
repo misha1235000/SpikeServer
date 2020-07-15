@@ -5,7 +5,7 @@ import { IClient } from '../client/client.interface';
 
 export interface IScope extends Document {
     value: string; // Name of the scope
-    clientId: string | IClient ; // Client who owns the scope (Or client object when populate)
+    audienceId: string | IClient ; // Audience id of the client who owns the scope (Or client object when populate)
     description: string; // Description of the scope purpose
     permittedClients: string[]; // Permitted clients to use that scope
     creator: string; // Scope creator (the user who create the scope)

@@ -17,6 +17,12 @@ const ClientSchema = new Schema({
         required: true,
         validate: [ClientValidator.isClientIdValid, 'Client ID isn\'t valid'],
     },
+    audienceId: {
+        type: String,
+        unique: true,
+        required: true,
+        validate: [ClientValidator.isAudienceIdValid, 'Audience ID isn\'t valid'],
+    },
     teamId: {
         type: String,
         ref: 'Team',

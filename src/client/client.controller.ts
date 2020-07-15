@@ -176,14 +176,21 @@ export class ClientController {
      * @param res - Response
      */
     public static async searchByName(req: Request, res: Response) {
+        console.log('search');
         // Check if name is given
         if (req.query.name) {
+
+            // Find all clients with fuzzy search
             const clients = await ClientRepository.searchByName(req.query.name);
-            return res.status(200).send(clients);
+
+            // If there's clients
+            if (clients) {
+                return res.status(200).send(clients);
+            }
         }
 
-        // Name is not given, return nothing
-        return [];
+        // Name is not given or no clients was found
+        throw new NotFound('Clients not found');
     }
 
     /**
