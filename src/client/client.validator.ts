@@ -2,7 +2,7 @@
 
 import { IClient } from './client.interface';
 import { TeamRepository } from '../team/team.repository';
-import { InvalidClientId, InvalidName, InvalidHostname } from './client.error';
+import { InvalidClientId, InvalidName, InvalidHostname, InvalidAudienceId } from './client.error';
 import { NotFound } from '../utils/error';
 
 export class ClientValidator {
@@ -10,7 +10,8 @@ export class ClientValidator {
     static isValid(client: IClient): boolean {
         return client && ClientValidator.isClientIdValid(client.clientId) &&
                        ClientValidator.isTokenValid(client.token) &&
-                       ClientValidator.isTeamIdValid(client.teamId) &&
+                       ClientValidator.isAudienceIdValid(client.audienceId) &&
+                       ClientValidator.isTeamIdValid(client.teamId as string) &&
                        ClientValidator.isNameValid(client.name) &&
                        ClientValidator.isHostnameValid(client.hostUris);
     }
@@ -21,6 +22,14 @@ export class ClientValidator {
         }
 
         throw new InvalidClientId('ClientId must be a type of string.');
+    }
+
+    static isAudienceIdValid(audienceId: string): boolean {
+        if (typeof audienceId === 'string') {
+            return true;
+        }
+
+        throw new InvalidAudienceId('ClientId must be a type of string.');
     }
 
     static isTokenValid(token: string): boolean {

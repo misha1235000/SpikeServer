@@ -3,6 +3,7 @@
 import { AxiosResponse } from 'axios';
 import { NotFound, InternalServerError, InvalidParameter } from '../utils/error';
 import { Forbidden } from '../auth/auth.error';
+import { ScopeType } from '../scope/scope.interface';
 
 export interface IClientBasicInformation {
     name: string;
@@ -11,6 +12,7 @@ export interface IClientBasicInformation {
     redirectUris: string[];
     hostUris: string[];
     scopes?: string[];
+    description?: string;
 }
 
 export interface IClientInformation extends IClientBasicInformation {
@@ -20,6 +22,19 @@ export interface IClientInformation extends IClientBasicInformation {
     audienceId: string;
 }
 
+export interface IScopeBasicInformation {
+    value: string;
+    clientId: string;
+    type: string;
+    description: string;
+}
+
+export interface IScopeInformation extends IScopeBasicInformation {
+    permittedClients: string[];
+}
+
+export enum ParsingObjectType { CLIENT = 'CLIENT', SCOPE = 'SCOPE' }
+
 // TODO: Proper implement parseResponse without strange return type
 export class OAuth2Parser {
 
@@ -27,7 +42,7 @@ export class OAuth2Parser {
      * Parses the response from the authorization server
      * @param response - The response from the authorization server
      */
-    static parseResponse(response: AxiosResponse) {
+    static parseResponse(response: AxiosResponse, objType: ParsingObjectType) {
 
         switch (response.status) {
 
@@ -35,6 +50,10 @@ export class OAuth2Parser {
         // TODO: Maybe add more parsing in future
         case 200:
         case 201:
+            if (objType === ParsingObjectType.SCOPE) {
+                return OAuth2Parser.parseScopeFullInfo(response.data);
+            }
+
             return OAuth2Parser.parseClientFullInfo(response.data);
 
         // Response OK without data - Delete requests
@@ -45,9 +64,9 @@ export class OAuth2Parser {
         case 400:
             throw new InvalidParameter(response.data ? response.data.message : 'Invalid request occurred');
 
-        // When 401 Unauthorized received, means the client doesn't exists.
+        // When 401 Unauthorized received, means the client/scope doesn't exists.
         case 401:
-            throw new NotFound('Client not exists.');
+            throw new NotFound(`${objType === ParsingObjectType.SCOPE ? 'Scope' : 'Client' } not exists.`);
 
         // When 403 Forbidden received, means the requests unauthorized for performing.
         case 403:
@@ -86,6 +105,29 @@ export class OAuth2Parser {
             secret: clientInformation.secret,
             audienceId: clientInformation.audienceId,
             ...OAuth2Parser.parseClientInfoToModel(clientInformation),
+        };
+    }
+
+    /**
+     * Parsing scope information from oauth2 to model to store in db.
+     * @param scopeInformation - Scope information received by oauth2 server
+     * @param creator - Creator field (which is missing in oauth2 server)
+     */
+    static parseScopeInfoToModel(scopeInformation: IScopeInformation, creator: string) {
+        return {
+            ...scopeInformation,
+            creator,
+        };
+    }
+
+    /**
+     * Parsing scope information received by oauth server to readable format for web client
+     * @param scopeInformation - Scope information received from oauth server
+     * @returns Scope information in readable format for the web client
+     */
+    private static parseScopeFullInfo(scopeInformation: IScopeInformation) {
+        return {
+            ...scopeInformation,
         };
     }
 }

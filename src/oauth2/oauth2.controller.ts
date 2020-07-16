@@ -4,7 +4,7 @@ import axios from 'axios';
 import { create, AccessToken } from 'simple-oauth2';
 import { config } from '../config';
 import { LOG_LEVEL, log, parseLogData } from '../utils/logger';
-import { OAuth2Parser, IClientInformation, IClientBasicInformation } from './oauth2.parser';
+import { OAuth2Parser, IClientInformation, IClientBasicInformation, IScopeBasicInformation, ParsingObjectType, IScopeInformation } from './oauth2.parser';
 import { ClientRepository } from '../client/client.repository';
 import { NotFound, InvalidParameter } from '../utils/error';
 import { InvalidClientInformation } from './oauth2.error';
@@ -65,12 +65,12 @@ export class OAuth2Controller {
     static async registerClient(clientInformation: IClientBasicInformation) {
         // Register the client in the authorization server
         const response = await axios.post(
-            config.authorizationServerAPI,
+            `${config.OAUTH_MANAGEMENT_ENDPOINT}/${config.OAUTH_CLIENT_MANAGEMENT_ENDPOINT}`,
             { clientInformation },
             { headers: { 'Authorization-Registrer': await OAuth2Controller.getToken() } },
         );
 
-        return OAuth2Parser.parseResponse(response);
+        return OAuth2Parser.parseResponse(response, ParsingObjectType.CLIENT);
     }
 
     /**
@@ -83,7 +83,7 @@ export class OAuth2Controller {
 
         // Read client information from authorization server
         const response = await axios.get(
-            `${config.authorizationServerAPI}/${clientId}`,
+            `${config.OAUTH_MANAGEMENT_ENDPOINT}/${config.OAUTH_CLIENT_MANAGEMENT_ENDPOINT}/${clientId}`,
             {
                 headers: {
                     'Authorization-Registrer': await OAuth2Controller.getToken(),
@@ -92,7 +92,7 @@ export class OAuth2Controller {
             },
         );
 
-        return OAuth2Parser.parseResponse(response);
+        return OAuth2Parser.parseResponse(response, ParsingObjectType.CLIENT);
     }
 
     /**
@@ -109,7 +109,7 @@ export class OAuth2Controller {
         if (clientId) {
 
             const response = await axios.put(
-                `${config.authorizationServerAPI}/${clientId}`,
+                `${config.OAUTH_MANAGEMENT_ENDPOINT}/${config.OAUTH_CLIENT_MANAGEMENT_ENDPOINT}/${clientId}`,
                 { clientInformation },
                 {
                     headers: {
@@ -119,7 +119,7 @@ export class OAuth2Controller {
                 },
             );
 
-            return OAuth2Parser.parseResponse(response);
+            return OAuth2Parser.parseResponse(response, ParsingObjectType.CLIENT);
         }
 
         log(LOG_LEVEL.INFO, parseLogData(OAuth2Controller.OAUTH_MESSAGES.ID_PARAMETER_MISSING,
@@ -140,7 +140,7 @@ export class OAuth2Controller {
 
         // Reset client credentials (Client ID, Client Secret)
         const response = await axios.patch(
-            `${config.authorizationServerAPI}/${clientId}`, {},
+            `${config.OAUTH_MANAGEMENT_ENDPOINT}/${config.OAUTH_CLIENT_MANAGEMENT_ENDPOINT}/${clientId}`, {},
             {
                 headers: {
                     'Authorization-Registrer': await OAuth2Controller.getToken(),
@@ -149,7 +149,7 @@ export class OAuth2Controller {
             },
         );
 
-        return OAuth2Parser.parseResponse(response);
+        return OAuth2Parser.parseResponse(response, ParsingObjectType.CLIENT);
     }
 
     /**
@@ -162,7 +162,7 @@ export class OAuth2Controller {
 
         // Delete from authorization server
         const response = await axios.delete(
-            `${config.authorizationServerAPI}/${clientId}`,
+            `${config.OAUTH_MANAGEMENT_ENDPOINT}/${config.OAUTH_CLIENT_MANAGEMENT_ENDPOINT}/${clientId}`,
             {
                 headers: {
                     'Authorization-Registrer': await OAuth2Controller.getToken(),
@@ -171,6 +171,74 @@ export class OAuth2Controller {
             },
         );
 
-        return OAuth2Parser.parseResponse(response);
+        return OAuth2Parser.parseResponse(response, ParsingObjectType.CLIENT);
+    }
+
+    /**
+     * Create new scope in authorization server for specific client.
+     * @param scopeInformation - Scope information to create a scope
+     * @param clientToken - Client token for managing the client
+     * @param clientId - Client id of the scope owner.
+     */
+    static async createScope(scopeInformation: IScopeBasicInformation, clientToken: string, clientId: string) {
+
+        // Create scope in oauth server for the client
+        const response = await axios.post(
+            `${config.OAUTH_MANAGEMENT_ENDPOINT}/${config.OAUTH_SCOPE_MANAGEMENT_ENDPOINT}/${clientId}`,
+            { scopeInformation },
+            {
+                headers: {
+                    'Authorization-Registrer': await OAuth2Controller.getToken(),
+                    Authorization: clientToken,
+                },
+            },
+        );
+
+        return OAuth2Parser.parseResponse(response, ParsingObjectType.SCOPE);
+    }
+
+    /**
+     * Update scope which belongs to specific client.
+     * @param clientId - Client id of the scope owner.
+     * @param clientToken - Client token for managing the client.
+     * @param audienceId - Audience id of the scope owner.
+     * @param value - Value of the scope.
+     * @param scopeInformation - Scope Information to update.
+     */
+    static async updateScope(clientId: string, clientToken: string, audienceId: string, value: string, scopeInformation: Partial<IScopeInformation>) {
+        // Update scope in oauth server for the client
+        const response = await axios.put(
+            `${config.OAUTH_MANAGEMENT_ENDPOINT}/${config.OAUTH_SCOPE_MANAGEMENT_ENDPOINT}/?clientId=${clientId}`,
+            { scopeInformation: {...scopeInformation, audienceId, value } },
+            {
+                headers: {
+                    'Authorization-Registrer': await OAuth2Controller.getToken(),
+                    Authorization: clientToken,
+                },
+            },
+        );
+
+        return OAuth2Parser.parseResponse(response, ParsingObjectType.SCOPE);
+    }
+
+    /**
+     * Delete scope which belongs to specific client.    
+     * @param clientId - Client id of the scope owner. 
+     * @param clientToken - Client token for managing the client.
+     * @param audienceId - Audience id of the scope owner.
+     * @param value - Scope value.
+     */
+    static async deleteScope(clientId: string, clientToken: string, audienceId: string, value: string) {
+        const response = await axios.delete(
+            `${config.OAUTH_MANAGEMENT_ENDPOINT}/${config.OAUTH_SCOPE_MANAGEMENT_ENDPOINT}/?clientId=${clientId}&audienceId=${audienceId}&value=${value}`,
+            {
+                headers: {
+                    'Authorization-Registrer': await OAuth2Controller.getToken(),
+                    Authorization: clientToken,
+                },
+            },
+        );
+
+        return OAuth2Parser.parseResponse(response, ParsingObjectType.SCOPE);
     }
 }

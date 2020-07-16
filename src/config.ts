@@ -28,7 +28,9 @@ export const config = {
     },
 
     // Authorization server endpoints configurations
-    authorizationServerAPI: 'oauth2/register',
+    OAUTH_MANAGEMENT_ENDPOINT: 'oauth2/management',
+    OAUTH_CLIENT_MANAGEMENT_ENDPOINT: 'client',
+    OAUTH_SCOPE_MANAGEMENT_ENDPOINT: 'scope',
 
     // Axios global configuration
     axios: {

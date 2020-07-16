@@ -1,5 +1,6 @@
 // client.model
 
+const fuzzySearching = require('mongoose-fuzzy-searching');
 import { model, Schema } from 'mongoose';
 import { IClient } from './client.interface';
 import { ClientValidator } from './client.validator';
@@ -10,11 +11,21 @@ const ClientSchema = new Schema({
         required: true,
         validate: [ClientValidator.isNameValid, 'Name isn\'t valid'],
     },
+    description: {
+        type: String,
+        default: 'No description provided.',
+    },
     clientId: {
         type: String,
         unique: true,
         required: true,
         validate: [ClientValidator.isClientIdValid, 'Client ID isn\'t valid'],
+    },
+    audienceId: {
+        type: String,
+        unique: true,
+        required: true,
+        validate: [ClientValidator.isAudienceIdValid, 'Audience ID isn\'t valid'],
     },
     teamId: {
         type: String,
@@ -47,5 +58,7 @@ ClientSchema.methods.toJSON = function () {
     delete obj.token;
     return obj;
 };
+
+ClientSchema.plugin(fuzzySearching, { fields: ['name'] });
 
 export const ClientModel = model<IClient>('Client', ClientSchema);

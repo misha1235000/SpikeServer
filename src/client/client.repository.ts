@@ -7,12 +7,30 @@ import { DuplicateUnique } from '../utils/error';
 
 export class ClientRepository {
 
+    private static readonly defaultPopulation = { path: 'teamId',  select: 'teamname' };
+
     /**
      * Finds a client by ID
      * @param clientId - ID of a specific client.
      */
     public static findById(clientId: string): DocumentQuery<IClient | null, IClient> {
         return ClientModel.findOne({ clientId });
+    }
+
+    /**
+     * Finds a client by Audience ID
+     * @param audienceId - Audience id of the specific client.
+     */
+    public static findByAudienceId(audienceId: string) {
+        return ClientModel.findOne({ audienceId });
+    }
+
+    /**
+     * Find clients by clients ids list
+     * @param clientIds - Client ids of specific clients.
+     */
+    public static findByIds(clientIds: string[], population: any = ClientRepository.defaultPopulation) {
+        return ClientModel.find({ clientId: { $in: clientIds } }).populate(population);
     }
 
     /**
@@ -27,6 +45,18 @@ export class ClientRepository {
         return ClientModel.find({
             teamId: { $in: teamIds },
         });
+    }
+
+    /**
+     * Fuzzy searching clients by name.
+     * @param clientName - Client name to search
+     * @param selectFields - Selection fields to include/exclude from returning object (Like in mongoose queries)
+     * @param population - Population field in object, which indicates which field to populate (Like in mongoose queries)
+     */
+    public static searchByName(clientName: string,
+                               selectFields: string = 'name description clientId',
+                               population: { path: string, select: string } =  ClientRepository.defaultPopulation) {
+        return (ClientModel as any).fuzzySearch(clientName).select(selectFields).populate(population);
     }
 
     /**
