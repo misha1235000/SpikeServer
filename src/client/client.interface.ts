@@ -6,7 +6,7 @@ import { ITeam } from '../team/team.interface';
 export interface IClient extends Document {
     name: string;
     clientId: string;
-    audienceId: string;
+    audienceId: string;    
     teamId: string | ITeam;
     teamName: string;
     hostUris: string[];

@@ -5,7 +5,8 @@ import { IScope } from './scope.interface';
 
 export class ScopeRepository {
 
-    private static readonly defaultPopulation = { path: 'client', select: 'clientId name', populate: { path: 'teamId',  select: 'teamname' } };
+    private static readonly defaultPopulation = { path: 'client', select: 'clientId name description', populate: { path: 'teamId',  select: 'teamname' } };
+    private static readonly defaultPopulationExtended = { path: 'permittedClientsDetails', select: 'clientId name description', populate: { path: 'teamId', select: 'teamname' } };
 
     // /**
     //  * Find all scopes belonging to the clients ids provided.
@@ -22,7 +23,7 @@ export class ScopeRepository {
      * @param population - (Optional) Population field to populate after query
      */
     public static async findByAudienceIds(audienceIds: string[], population: any = ScopeRepository.defaultPopulation) {
-        return await ScopeModel.find({ audienceId: { $in: audienceIds } }).populate(population);
+        return await ScopeModel.find({ audienceId: { $in: audienceIds } }).populate(population).populate(ScopeRepository.defaultPopulationExtended);
     }
 
     /**
@@ -31,10 +32,12 @@ export class ScopeRepository {
      * @param population - (Optional) Population field to populate after query
      */
     public static async findById(scopeId: string, population: any = ScopeRepository.defaultPopulation) {
-        return await ScopeModel.findOne({ _id: scopeId }).populate(population);
+        return await ScopeModel.findOne({ _id: scopeId }).populate(population).populate(ScopeRepository.defaultPopulationExtended);
     }
 
+    
     /**
+     * @deprecated
      * Find scopes by client name of the scope owner.
      * @param clientName - Client name of the scope owner
      */
@@ -106,7 +109,7 @@ export class ScopeRepository {
      * @param population - (Optional) Population field to populate after query
      */
     public static async findByAudienceId(audienceId: string, population: any = ScopeRepository.defaultPopulation) {
-        return await ScopeModel.find({ audienceId }).populate(population);
+        return await ScopeModel.find({ audienceId }).populate(population).populate(ScopeRepository.defaultPopulationExtended);
     }
 
     // /**
@@ -126,7 +129,7 @@ export class ScopeRepository {
      * @param population - (Optional) Population field to populate after query
      */
     public static async findByAudienceIdAndScopeName(audienceId: string, scopeName: string, population: any = ScopeRepository.defaultPopulation) {
-        return await ScopeModel.findOne({ audienceId, value: scopeName }).populate(population);
+        return await ScopeModel.findOne({ audienceId, value: scopeName }).populate(population).populate(ScopeRepository.defaultPopulationExtended);
     }
 
     /**
@@ -157,7 +160,14 @@ export class ScopeRepository {
      * @param population - (Optional) Population field to populate after query
      */
     public static async update(audienceId: string, scopeName: string, updateScope: Partial<IScope>, population: any = ScopeRepository.defaultPopulation) {
-        return await ScopeModel.findOneAndUpdate({ audienceId, value: scopeName }, updateScope, { new: true, runValidators: true }).populate(population);
+        // Currently only update permitted clients
+
+        return await ScopeModel.findOneAndUpdate(
+            { audienceId, value: scopeName },
+            { $set: { permittedClients: updateScope.permittedClients } },
+            { new: true, runValidators: true })
+            .populate(population)
+            .populate(ScopeRepository.defaultPopulationExtended);
     }
 
 

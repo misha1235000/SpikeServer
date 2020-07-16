@@ -159,13 +159,16 @@ export class ScopeController {
      */
     public static async update(req: Request, res: Response) {
         const scopeInformation = req.body.scopeInformation;
-        const scopeId = req.params.scopeId;
 
         // If scope id parameter and the scope information are provided
-        if (scopeId && Object.keys(scopeInformation).length > 0) {
+        if (Object.keys(scopeInformation).length > 0 && scopeInformation.scopeId && scopeInformation.permittedClients) {
+            scopeInformation.permittedClients = [...new Set(scopeInformation.permittedClients)];
+
+            // Extracting scope id
+            const scopeId = scopeInformation.scopeId            
 
             // First, get the scope and acquire the client token
-            const fullScope = await ScopeRepository.findById(scopeId, { path: 'client', select: 'token' });
+            const fullScope = await ScopeRepository.findById(scopeId, { path: 'client', select: 'clientId token' });
 
             // Scope is not found
             if (!fullScope) {
@@ -178,8 +181,14 @@ export class ScopeController {
             }
 
             // Scope exists, update it in oauth server and locally
-            await OAuth2Controller.updateScope(scopeId, scopeInformation, (fullScope.audienceId as IClient).token);
-            const updatedScope = await ScopeRepository.update((fullScope.audienceId as IClient).clientId, fullScope.value, scopeInformation);
+            await OAuth2Controller.updateScope(
+                (fullScope.client as IClient).clientId,
+                (fullScope.client as IClient).token,
+                fullScope.audienceId as string,
+                fullScope.value,
+                scopeInformation,
+            );
+            const updatedScope = await ScopeRepository.update(fullScope.audienceId as string, fullScope.value, scopeInformation);
             return res.status(200).send(ScopeController.parseScopeData(updatedScope as IScope));
         }
 
@@ -247,14 +256,14 @@ export class ScopeController {
      * Parsing scope information to readable format for web client
      * @param scopeData - Scope information to parse
      */
-    private static parseScopeData(scopeData: IScope) {
+    private static parseScopeData(scopeData: IScope) {  
         return {
             id: scopeData._id,
             value: scopeData.value,
             type: scopeData.type,
             description: scopeData.description,
             creator: scopeData.creator,
-            permittedClients: scopeData.permittedClients,
+            permittedClients: scopeData.permittedClientsDetails || [],
             audienceId: scopeData.audienceId,
             client: {
                 clientId: (scopeData.client as IClient).clientId,

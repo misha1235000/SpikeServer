@@ -11,6 +11,10 @@ const ClientSchema = new Schema({
         required: true,
         validate: [ClientValidator.isNameValid, 'Name isn\'t valid'],
     },
+    description: {
+        type: String,
+        default: 'No description provided.',
+    },
     clientId: {
         type: String,
         unique: true,

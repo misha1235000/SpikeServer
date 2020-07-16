@@ -199,15 +199,17 @@ export class OAuth2Controller {
 
     /**
      * Update scope which belongs to specific client.
-     * @param scopeId - Scope id of the scope to update.
-     * @param scopeInformation - Scope Information to update.
+     * @param clientId - Client id of the scope owner.
      * @param clientToken - Client token for managing the client.
+     * @param audienceId - Audience id of the scope owner.
+     * @param value - Value of the scope.
+     * @param scopeInformation - Scope Information to update.
      */
-    static async updateScope(scopeId: string, scopeInformation: Partial<IScopeInformation>, clientToken: string) {
+    static async updateScope(clientId: string, clientToken: string, audienceId: string, value: string, scopeInformation: Partial<IScopeInformation>) {
         // Update scope in oauth server for the client
         const response = await axios.put(
-            `${config.OAUTH_MANAGEMENT_ENDPOINT}/${config.OAUTH_SCOPE_MANAGEMENT_ENDPOINT}/${scopeId}`,
-            { scopeInformation },
+            `${config.OAUTH_MANAGEMENT_ENDPOINT}/${config.OAUTH_SCOPE_MANAGEMENT_ENDPOINT}/?clientId=${clientId}`,
+            { scopeInformation: {...scopeInformation, audienceId, value } },
             {
                 headers: {
                     'Authorization-Registrer': await OAuth2Controller.getToken(),

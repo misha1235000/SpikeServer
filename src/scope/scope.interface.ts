@@ -11,6 +11,7 @@ export interface IScope extends Document {
     creator: string; // Scope creator (the user who create the scope)
     type: ScopeType; // Type of the scope (Public/Private)
     client?: IClient; // Virtual population of client
+    permittedClientsDetails?: Partial<IClient>[] // Virtual population of permitted clients
 }
 
 export enum ScopeType { PUBLIC = 'PUBLIC', PRIVATE = 'PRIVATE' }

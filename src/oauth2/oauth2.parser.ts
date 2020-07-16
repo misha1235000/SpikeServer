@@ -12,6 +12,7 @@ export interface IClientBasicInformation {
     redirectUris: string[];
     hostUris: string[];
     scopes?: string[];
+    description?: string;
 }
 
 export interface IClientInformation extends IClientBasicInformation {

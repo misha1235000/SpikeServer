@@ -21,7 +21,7 @@ const ScopeSchema = new Schema(
             },
         },
         permittedClients: {
-            type: [{ type: Schema.Types.ObjectId, ref: 'Client' }],
+            type: [{ type: String, ref: 'Client' }],
             required: true,
             default: [],
             validator: {
@@ -57,6 +57,12 @@ ScopeSchema.virtual('client', {
     localField: 'audienceId',
     foreignField: 'audienceId',
     justOne: true,
+});
+
+ScopeSchema.virtual('permittedClientsDetails', {
+    ref: 'Client',
+    localField: 'permittedClients',
+    foreignField: 'clientId',
 });
 
 // Ensures there's only one unique scope value for unique client

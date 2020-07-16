@@ -176,7 +176,6 @@ export class ClientController {
      * @param res - Response
      */
     public static async searchByName(req: Request, res: Response) {
-        console.log('search');
         // Check if name is given
         if (req.query.name) {
 
