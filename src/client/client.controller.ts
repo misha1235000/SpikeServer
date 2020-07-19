@@ -7,8 +7,9 @@ import { IClientBasicInformation, IClientInformation, OAuth2Parser } from '../oa
 import { ClientRepository } from './client.repository';
 import { TeamRepository } from '../team/team.repository';
 import { IClient } from './client.interface';
-import { InvalidParameter, NotFound, DuplicateUnique } from '../utils/error';
+import { InvalidParameter, NotFound, DuplicateUnique, BadRequest } from '../utils/error';
 import { Types } from 'mongoose';
+import { ScopeRepository } from '../scope/scope.repository';
 
 export class ClientController {
     static readonly CLIENT_MESSAGES = {
@@ -20,6 +21,7 @@ export class ClientController {
         NO_STACK: 'No stack was found.',
         SUCCESSFULLY_CREATED: 'Client Successfully Created',
         GET_CLIENT_INFORMATION: 'Got Client Information from OSpike.',
+        CLIENT_UNDELETABLE: 'Client cannot be deleted, need to delete scopes first.',
     };
 
     /**
@@ -97,8 +99,12 @@ export class ClientController {
                 throw new InvalidParameter(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER);
             }
 
+            // Gettting all client's scopes to determine if it deletable
+            const isDeletable = (await ScopeRepository.findByAudienceId(clientDoc.audienceId)).length === 0;
+
             const clientAfterRead = await OAuth2Controller.readClientInformation(clientId, clientDoc.token);
             clientAfterRead.teamId = clientDoc.teamId;
+            clientAfterRead.isDeletable = isDeletable;
             return res.status(200).send(clientAfterRead);
         }
 
@@ -312,6 +318,20 @@ export class ClientController {
                                                  ClientController.CLIENT_MESSAGES.NO_STACK));
 
                 throw new InvalidParameter(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER);
+            }
+
+            // Checking if the client has scopes (so he cant be deleted)
+            const isDeletable = (await ScopeRepository.findByAudienceId(clientDoc.audienceId)).length === 0;
+
+            // If client undeletable
+            if (!isDeletable) {
+                log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.CLIENT_UNDELETABLE,
+                    'ClientController',
+                    '400',
+                    ClientController.CLIENT_MESSAGES.NO_STACK));
+
+                
+                throw new BadRequest(ClientController.CLIENT_MESSAGES.CLIENT_UNDELETABLE);
             }
 
             // First delete the client from OSpike
