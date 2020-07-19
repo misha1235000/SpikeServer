@@ -5,7 +5,6 @@ import { TeamValidator } from '../team/team.validator';
 import { TeamRepository } from '../team/team.repository';
 import { LOG_LEVEL, log, parseLogData } from '../utils/logger';
 import { ITeam } from '../team/team.interface';
-import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { readFileSync } from 'fs';
 import { join } from 'path';

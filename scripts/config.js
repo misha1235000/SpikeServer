@@ -16,7 +16,7 @@ const config = {
 
   // Fuzzy db collections and fields to index
   fuzzyCollections: [
-    { collectionName: 'clients', fields: ['name'] },
+    { collectionName: 'Client', fields: ['name'] },
   ],
 }
 

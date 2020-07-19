@@ -14,6 +14,12 @@ export class InvalidClientId extends InvalidParameter {
     }
 }
 
+export class InvalidAudienceId extends InvalidParameter {
+    constructor(message?: string) {
+        super(message || 'Invalid Audience Id Provided');
+    }
+}
+
 export class InvalidHostname extends InvalidParameter {
     constructor(message?: string) {
         super(message || 'Invalid Hostname Provided');
