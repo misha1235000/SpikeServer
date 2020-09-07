@@ -24,6 +24,8 @@ logger.add(new winstonRotateFile({
     format,
     level: LOG_LEVEL.INFO,
     datePattern: 'YYYY-MM-DD',
+    maxSize: '3g',
+    maxFiles: 3,
     filename: process.env.LOG_FILE_NAME,
     dirname: process.env.LOG_FILE_DIR || '.',
 }));

@@ -39,6 +39,10 @@ export const config = {
 
     secret: process.env.OAUTH_SECRET,
 
+    // DDOS Protection configuration
+    DDOS_BURST_RATE: 8,
+    DDOS_LIMIT_RATE: 15,
+
     // HTTPS Configurations
     privateKeyPath: join(__dirname, 'certs/files/privatekey.pem'),
     certificatePath: join(__dirname, 'certs/files/certificate.pem'),
