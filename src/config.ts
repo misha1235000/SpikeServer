@@ -24,7 +24,7 @@ export const config = {
     tokenConfig: {
         scope: 'client_manager_special_scope', // Should include the special scope for register and
                                                // Manage other clients.
-        audience: `${process.env.OAUTH_URL}:${process.env.OAUTH_PORT}`,    // Mention the audience of the access token (authorization server)
+        audience: `ospike`,    // Mention the audience of the access token (authorization server)
     },
 
     // Authorization server endpoints configurations
@@ -38,10 +38,6 @@ export const config = {
     },
 
     secret: process.env.OAUTH_SECRET,
-
-    // DDOS Protection configuration
-    DDOS_BURST_RATE: 8,
-    DDOS_LIMIT_RATE: 15,
 
     // HTTPS Configurations
     privateKeyPath: join(__dirname, 'certs/files/privatekey.pem'),

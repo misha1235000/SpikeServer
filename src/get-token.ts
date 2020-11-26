@@ -6,7 +6,7 @@ import * as https from 'https';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-const PUBLIC_KEY_PATH = join(__dirname, 'certs/files/publickeyofclient.pem');
+const PUBLIC_KEY_PATH = join(__dirname, 'certs/files/publickeyofospike.pem');
 
 async function readAndWrite() {
     const agent = new https.Agent({
@@ -18,7 +18,7 @@ async function readAndWrite() {
 }
 
 const options = {
-    redisHost: `redis://:${process.env.REDIS_PASSWORD}@localhost:6379`,
+    redisHost: `redis://:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:6379`,
     ClientId: process.env.CLIENT_ID,
     ClientSecret: process.env.CLIENT_SECRET,
     spikeURL: `${process.env.OAUTH_URL}:${process.env.OAUTH_PORT}/oauth2/token`,

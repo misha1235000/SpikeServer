@@ -1,0 +1,33 @@
+version: '2.0'
+services:
+  spike-server:
+    container_name: spike-server
+    image: spikeproj/spike-server:latest
+    ports:
+      - '3005:3005' # Change it if you want
+    build: .
+    volumes:
+      - ./logs:/usr/src/app/logs
+    environment:
+      - LOG_FILE_DIR=logs
+      - PORT= 3005
+      - AUTHENTICATION_REQUIRED=true
+      - CLIENT_ID=123456
+      - CLIENT_SECRET=123456
+      - DB_PROD_USER=test
+      - DB_PROD_PASS=test123
+      - DB_PROD_NAME=spikeservertest
+      - DB_PROD_HOST=ds123584.mlab.com:23584
+      - OAUTH_SECRET=secretcode
+      - OAUTH_URL=https://ospike
+      - OAUTH_PORT=1338
+      - KARTOFFEL_URL=http://kartoffel-master.eastus.cloudapp.azure.com:3001
+      - SERVER_PORT=3005
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=Spike12345678
+    restart: always
+  redis:
+    image: "redis:alpine"
+    command: redis-server --requirepass Spike12345678
+    ports:
+      - '6379:6379'
