@@ -10,6 +10,7 @@ export class ClientRouter {
         router.get('/search', Wrapper.wrapAsync(ClientController.searchByName));
         router.get('/', Wrapper.wrapAsync(ClientController.findByToken));
         router.get('/:clientId', Wrapper.wrapAsync(ClientController.read));
+        router.get('/:clientId/tokens', Wrapper.wrapAsync(ClientController.getClientActiveTokens));
         router.put('/:clientId', Wrapper.wrapAsync(ClientController.update));
         router.post('/search', Wrapper.wrapAsync(ClientController.findByIds));
         router.post('/', Wrapper.wrapAsync(ClientController.create));

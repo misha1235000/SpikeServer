@@ -33,7 +33,7 @@ export interface IScopeInformation extends IScopeBasicInformation {
     permittedClients: string[];
 }
 
-export enum ParsingObjectType { CLIENT = 'CLIENT', SCOPE = 'SCOPE' }
+export enum ParsingObjectType { CLIENT = 'CLIENT', SCOPE = 'SCOPE', TOKEN_LIST = 'TOKEN_LIST' }
 
 // TODO: Proper implement parseResponse without strange return type
 export class OAuth2Parser {
@@ -50,11 +50,19 @@ export class OAuth2Parser {
         // TODO: Maybe add more parsing in future
         case 200:
         case 201:
-            if (objType === ParsingObjectType.SCOPE) {
-                return OAuth2Parser.parseScopeFullInfo(response.data);
-            }
 
-            return OAuth2Parser.parseClientFullInfo(response.data);
+            switch (objType) {
+
+            case ParsingObjectType.SCOPE:
+                return OAuth2Parser.parseScopeFullInfo(response.data);
+
+            case ParsingObjectType.CLIENT:
+                return OAuth2Parser.parseClientFullInfo(response.data);
+
+            case ParsingObjectType.TOKEN_LIST:
+            default:
+                return response.data;
+            }
 
         // Response OK without data - Delete requests
         case 204:

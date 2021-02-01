@@ -74,6 +74,26 @@ export class OAuth2Controller {
     }
 
     /**
+     * Gets client's active tokens count list from authorization server.
+     *
+     * @param clientId - Client id of the client
+     * @param clientToken - Client token for managing the client
+     */
+    static async getClientActiveTokens(clientId: string, clientToken: string) {
+        const response = await axios.get(
+            `${config.OAUTH_MANAGEMENT_ENDPOINT}/${config.OAUTH_CLIENT_MANAGEMENT_ENDPOINT}/${clientId}/${config.OAUTH_CLIENT_MANAGEMENT_ACTIVE_TOKENS_ENDPOINT}`,
+            {
+                headers: {
+                    'Authorization-Registrer': await OAuth2Controller.getToken(),
+                    Authorization: clientToken,
+                },
+            },
+        );
+
+        return OAuth2Parser.parseResponse(response, ParsingObjectType.TOKEN_LIST);
+    }
+
+    /**
      * Reads client information from authorization server
      *
      * @param clientId - Client id of the client to read

@@ -117,6 +117,56 @@ export class ClientController {
     }
 
     /**
+     * Get client's active tokens count list.
+     * @param req - Request
+     * @param res - Response
+     */
+    public static async getClientActiveTokens(req: Request, res: Response) {
+
+        // Gets the client's id to read
+        const clientId = req.params.clientId;
+
+        if (clientId) {
+
+            // Getting the client registration token associated to the client
+            const clientDoc = await ClientRepository.findById(clientId);
+
+            // Checks if the client is unexist or client not associated to the team
+            // (we do that to avoid exposing our db to user who performs information gathering attacks)
+            if (!clientDoc) {
+                log(
+                    LOG_LEVEL.INFO,
+                    parseLogData(
+                        ClientController.CLIENT_MESSAGES.INVALID_PARAMETER,
+                        'ClientController',
+                        '400',
+                        ClientController.CLIENT_MESSAGES.NO_STACK,
+                    ),
+                );
+
+                throw new InvalidParameter(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER);
+            }
+
+            // Get client's active tokens count list from the authorization server
+            const activeTokenList = await OAuth2Controller.getClientActiveTokens(clientId, clientDoc.token);
+
+            return res.status(200).send(activeTokenList);
+        }
+
+        log(
+            LOG_LEVEL.INFO,
+            parseLogData(
+                this.CLIENT_MESSAGES.INVALID_PARAMETER,
+                'ClientController',
+                '400',
+                ClientController.CLIENT_MESSAGES.NO_STACK,
+            ),
+        );
+
+        throw new InvalidParameter(this.CLIENT_MESSAGES.INVALID_PARAMETER);
+    }
+
+    /**
      * Find all clients of a specified team id.
      * @param req - Request
      * @param res - Response
@@ -325,12 +375,16 @@ export class ClientController {
 
             // If client undeletable
             if (!isDeletable) {
-                log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.CLIENT_UNDELETABLE,
-                    'ClientController',
-                    '400',
-                    ClientController.CLIENT_MESSAGES.NO_STACK));
+                log(
+                    LOG_LEVEL.INFO,
+                    parseLogData(
+                        ClientController.CLIENT_MESSAGES.CLIENT_UNDELETABLE,
+                        'ClientController',
+                        '400',
+                        ClientController.CLIENT_MESSAGES.NO_STACK,
+                    ),
+                );
 
-                
                 throw new BadRequest(ClientController.CLIENT_MESSAGES.CLIENT_UNDELETABLE);
             }
 
