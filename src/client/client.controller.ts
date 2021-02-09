@@ -117,6 +117,32 @@ export class ClientController {
     }
 
     /**
+     * Get all clients with sorting and pagination.
+     * @param req - Request
+     * @param res - Response
+     */
+    public static async getAllClients(req: Request, res: Response) {
+        const sort = req.query.sort || 'name';
+        const desc = parseInt(req.query.desc) === 1 ? true: false; 
+        let limit = parseInt(req.query.limit);
+        let skip = parseInt(req.query.skip);
+
+        // Validate limit value
+        if (isNaN(limit) || limit > 50 || limit <= 0) {
+            limit = 50;
+        }
+
+        // Validate skip value
+        if (isNaN(skip) || skip < 0) {
+            skip = 0;
+        }
+
+        const clients = await ClientRepository.find(limit, skip, sort, desc);
+
+        return res.status(200).send(clients);
+    }
+
+    /**
      * Get client's active tokens count list.
      * @param req - Request
      * @param res - Response
@@ -151,6 +177,39 @@ export class ClientController {
             const activeTokenList = await OAuth2Controller.getClientActiveTokens(clientId, clientDoc.token);
 
             return res.status(200).send(activeTokenList);
+        }
+
+        log(
+            LOG_LEVEL.INFO,
+            parseLogData(
+                this.CLIENT_MESSAGES.INVALID_PARAMETER,
+                'ClientController',
+                '400',
+                ClientController.CLIENT_MESSAGES.NO_STACK,
+            ),
+        );
+
+        throw new InvalidParameter(this.CLIENT_MESSAGES.INVALID_PARAMETER);
+    }
+
+    /**
+     * Get all permitted scopes available to a given client.
+     * @param req - Request
+     * @param res - Response
+     */
+    public static async getClientPermittedScopes(req: Request, res: Response) {
+
+        // Gets the client's id
+        const clientId = req.params.clientId;
+        const sort = req.query.sort || 'name';
+        const desc = parseInt(req.query.desc) === 1 ? true: false; 
+
+        if (clientId) {
+
+            // Get client's permitted scopes list (The list is list of clients, which contains scopes array)
+            const clientsPermittedScopes = await ScopeRepository.findPermittedScopes(clientId, sort, desc);         
+
+            return res.status(200).send(clientsPermittedScopes);
         }
 
         log(

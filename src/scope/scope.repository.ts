@@ -18,6 +18,82 @@ export class ScopeRepository {
     // }
 
     /**
+     * Get all permitted scopes for a given client.
+     * @param clientId - ID of a specific client.
+     */
+    public static async findPermittedScopes(clientId: string, sort: string, desc: boolean) {
+        
+        // Ensure the sort field is exists.
+        const sortFields = ['name', 'audienceId', 'description'];
+        const sortField = sortFields.indexOf(sort) !== -1 ? sort: sortFields[0];
+
+        return await ScopeModel.aggregate([
+            { 
+                $match: {
+                    permittedClients: clientId,
+                },
+            }, 
+            { 
+                $group: {
+                    _id: '$audienceId',
+                    scopes: {
+                        $push: {
+                            value: '$value',
+                            type: '$type',
+                            description: '$description',
+                        },
+                    },
+                },
+            }, 
+            { 
+                $lookup: {
+                    from: 'clients',
+                    localField: '_id',
+                    foreignField: 'audienceId',
+                    as: 'client',
+                },
+            }, 
+            { 
+                $unwind: {
+                    path: '$client',
+                },
+            }, 
+            { 
+                $lookup: {
+                    from: 'teams',
+                    localField: 'client.teamId',
+                    foreignField: '_id', 
+                    as: 'team',
+                },
+            }, 
+            { 
+                $unwind: {
+                    path: '$team',
+                },
+            }, 
+            { 
+                $project: {
+                    _id: 0.0,
+                    name: '$client.name',
+                    description: '$client.name',
+                    audienceId: '$_id',
+                    scopes: '$scopes',
+                    team: {
+                        teamname : 1.0,
+                        desc: 1.0,
+                        ownerId: 1.0,
+                    },
+                },
+            },
+            {
+                $sort: {
+                    [sortField]: desc ? -1 : 1,
+                },
+            },
+        ]);
+    }
+
+    /**
      * Find all scopes belonging to the audience ids provided.
      * @param clientIds - Arrays of audience ids
      * @param population - (Optional) Population field to populate after query

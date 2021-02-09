@@ -10,6 +10,73 @@ export class ClientRepository {
     private static readonly defaultPopulation = { path: 'teamId',  select: 'teamname' };
 
     /**
+     * Finds clients by pagination parameters.
+     * @param limit - Number of clients to return in batch.
+     * @param skip - Number of clients to skip.
+     * @param sort - Field to sort by.
+     * @param desc - Boolean which indicates the order of the sort, True for desc False for asc.
+     */
+    public static find(limit: number, skip: number, sort: string, desc: boolean) {
+
+        // Ensure the sort field is exists.
+        const sortFields = ['name', 'audienceId', 'description'];
+        const sortField = sortFields.indexOf(sort) !== -1 ? sort: sortFields[0];
+
+        return ClientModel.aggregate([
+            {
+                $sort: {
+                    [sortField]: desc ? -1 : 1,
+                },
+            },
+            {
+                $skip: skip,
+            },
+            {
+                $limit: limit,
+            },
+            { 
+                $lookup: {
+                    from: 'scopes',
+                    localField: 'audienceId', 
+                    foreignField: 'audienceId', 
+                    as: 'scopes',
+                },
+            }, 
+            { 
+                $lookup: {
+                    from: 'teams', 
+                    localField: 'teamId', 
+                    foreignField: '_id', 
+                    as: 'team',
+                },
+            }, 
+            { 
+                $unwind: {
+                    path: '$team',
+                },
+            }, 
+            { 
+                $project: {
+                    name: 1.0, 
+                    description: 1.0, 
+                    audienceId: 1.0, 
+                    scopes: {
+                        permittedClients: 1.0, 
+                        description: 1.0,
+                        value: 1.0,
+                        type: 1.0,
+                    }, 
+                    team : {
+                        teamname: 1.0, 
+                        desc: 1.0, 
+                        ownerId: 1.0,
+                    },
+                },
+            },
+        ]);
+    }
+
+    /**
      * Finds a client by ID
      * @param clientId - ID of a specific client.
      */
