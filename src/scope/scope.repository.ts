@@ -78,6 +78,11 @@ export class ScopeRepository {
                 },
             },
             {
+                $sort: {
+                    'client._id': -1,
+                },
+            },
+            {
                 $project: {
                     _id: 0.0,
                     name: '$client.name',

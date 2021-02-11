@@ -30,6 +30,11 @@ export class ClientRepository {
 
         const aggregation = [
             {
+                $sort: {
+                    _id: -1,
+                },
+            },
+            {
                 $lookup: {
                     from: 'scopes',
                     localField: 'audienceId',
@@ -52,6 +57,7 @@ export class ClientRepository {
             },
             {
                 $project: {
+                    _id: 0.0,
                     name: 1.0,
                     description: 1.0,
                     audienceId: 1.0,
@@ -104,13 +110,13 @@ export class ClientRepository {
                 },
             ];
 
-            sortAggregationIndexInsert = 1;
+            sortAggregationIndexInsert = 2;
             break;
 
         case SortOptions.USAGE:
 
             // Must remove first lookup because this lookup (that one below) operates faster.
-            aggregation.splice(0, 1);
+            aggregation.splice(1, 1);
 
             sortAggregationStages = [
                 {
@@ -200,7 +206,7 @@ export class ClientRepository {
                 },
             ];
 
-            sortAggregationIndexInsert = 0;
+            sortAggregationIndexInsert = 1;
             break;
 
         case SortOptions.NAME:
@@ -218,7 +224,7 @@ export class ClientRepository {
                 },
             ];
 
-            sortAggregationIndexInsert = 0;
+            sortAggregationIndexInsert = 1;
             break;
         }
 
