@@ -122,10 +122,11 @@ export class ClientController {
      * @param res - Response
      */
     public static async getAllClients(req: Request, res: Response) {
-        const sort = req.query.sort || 'name';
-        const desc = parseInt(req.query.desc) === 1 ? true: false; 
-        let limit = parseInt(req.query.limit);
-        let skip = parseInt(req.query.skip);
+        const sort = req.query.sort || ClientRepository.SortOptions.NAME;
+        const desc = parseInt(req.query.desc, 10) === 1 ? true : false;
+        let limit = parseInt(req.query.limit, 10);
+        let skip = parseInt(req.query.skip, 10);
+        let teams = [];
 
         // Validate limit value
         if (isNaN(limit) || limit > 50 || limit <= 0) {
@@ -137,7 +138,12 @@ export class ClientController {
             skip = 0;
         }
 
-        const clients = await ClientRepository.find(limit, skip, sort, desc);
+        // If the usage sort option is passed, need to pass the teams of the user to the search
+        if (req.person && sort === ClientRepository.SortOptions.USAGE) {
+            teams = (await TeamRepository.findByUserId(req.person.genesisId)).map(team => team._id);
+        }
+
+        const clients = await ClientRepository.find(limit, skip, sort, desc, teams);
 
         return res.status(200).send(clients);
     }
@@ -201,13 +207,13 @@ export class ClientController {
 
         // Gets the client's id
         const clientId = req.params.clientId;
-        const sort = req.query.sort || 'name';
-        const desc = parseInt(req.query.desc) === 1 ? true: false; 
+        const sort = req.query.sort || ScopeRepository.SortOptions;
+        const desc = parseInt(req.query.desc, 10) === 1 ? true : false;
 
         if (clientId) {
 
             // Get client's permitted scopes list (The list is list of clients, which contains scopes array)
-            const clientsPermittedScopes = await ScopeRepository.findPermittedScopes(clientId, sort, desc);         
+            const clientsPermittedScopes = await ScopeRepository.findPermittedScopes(clientId, sort, desc);
 
             return res.status(200).send(clientsPermittedScopes);
         }

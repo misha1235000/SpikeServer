@@ -5,9 +5,18 @@ import { IClient } from './client.interface';
 import { DocumentQuery, Types } from 'mongoose';
 import { DuplicateUnique } from '../utils/error';
 
+enum SortOptions {
+    POPULARITY = 'popularity',
+    NAME = 'name',
+    DATE = 'date',
+    USAGE = 'usage',
+}
+
 export class ClientRepository {
 
-    private static readonly defaultPopulation = { path: 'teamId',  select: 'teamname' };
+    public static readonly SortOptions = SortOptions;
+
+    private static readonly defaultPopulation = { path: 'teamId', select: 'teamname' };
 
     /**
      * Finds clients by pagination parameters.
@@ -15,65 +24,208 @@ export class ClientRepository {
      * @param skip - Number of clients to skip.
      * @param sort - Field to sort by.
      * @param desc - Boolean which indicates the order of the sort, True for desc False for asc.
+     * @param teams - Array of teams to search by usage of clients of the teams in other clients (By the scopes's permitted clients)
      */
-    public static find(limit: number, skip: number, sort: string, desc: boolean) {
+    public static find(limit: number, skip: number, sort: SortOptions, desc: boolean, teams: any = []) {
 
-        // Ensure the sort field is exists.
-        const sortFields = ['name', 'audienceId', 'description'];
-        const sortField = sortFields.indexOf(sort) !== -1 ? sort: sortFields[0];
-
-        return ClientModel.aggregate([
+        const aggregation = [
             {
-                $sort: {
-                    [sortField]: desc ? -1 : 1,
-                },
-            },
-            {
-                $skip: skip,
-            },
-            {
-                $limit: limit,
-            },
-            { 
                 $lookup: {
                     from: 'scopes',
-                    localField: 'audienceId', 
-                    foreignField: 'audienceId', 
+                    localField: 'audienceId',
+                    foreignField: 'audienceId',
                     as: 'scopes',
                 },
-            }, 
-            { 
+            },
+            {
                 $lookup: {
-                    from: 'teams', 
-                    localField: 'teamId', 
-                    foreignField: '_id', 
+                    from: 'teams',
+                    localField: 'teamId',
+                    foreignField: '_id',
                     as: 'team',
                 },
-            }, 
-            { 
+            },
+            {
                 $unwind: {
                     path: '$team',
                 },
-            }, 
-            { 
+            },
+            {
                 $project: {
-                    name: 1.0, 
-                    description: 1.0, 
-                    audienceId: 1.0, 
+                    name: 1.0,
+                    description: 1.0,
+                    audienceId: 1.0,
                     scopes: {
-                        permittedClients: 1.0, 
+                        permittedClients: 1.0,
                         description: 1.0,
                         value: 1.0,
                         type: 1.0,
-                    }, 
-                    team : {
-                        teamname: 1.0, 
-                        desc: 1.0, 
+                    },
+                    popularity: 1,
+                    usage: 1,
+                    team: {
+                        teamname: 1.0,
+                        desc: 1.0,
                         ownerId: 1.0,
                     },
                 },
             },
-        ]);
+        ];
+
+        const orderDirection = desc ? -1 : 1;
+        let sortAggregationIndexInsert = 0;
+        let sortAggregationStages: any = [];
+
+        switch (sort) {
+
+        case SortOptions.POPULARITY:
+            sortAggregationStages = [
+                {
+                    $addFields: {
+                        popularity: {
+                            $reduce: {
+                                input: '$scopes',
+                                initialValue: 0,
+                                in: { $add: ['$$value', { $size: '$$this.permittedClients' }] },
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: {
+                        popularity: orderDirection,
+                    },
+                },
+                {
+                    $skip: skip,
+                },
+                {
+                    $limit: limit,
+                },
+            ];
+
+            sortAggregationIndexInsert = 1;
+            break;
+
+        case SortOptions.USAGE:
+
+            // Must remove first lookup because this lookup (that one below) operates faster.
+            aggregation.splice(0, 1);
+
+            sortAggregationStages = [
+                {
+                    $lookup: {
+                        from : 'scopes',
+                        let : {
+                            audience : '$audienceId',
+                        },
+                        pipeline : [
+                            {
+                                $match : {
+                                    $expr : {
+                                        $eq : [
+                                            '$audienceId',
+                                            '$$audience',
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup : {
+                                    from : 'clients',
+                                    let : {
+                                        currPermittedClients : '$permittedClients',
+                                    },
+                                    pipeline : [
+                                        {
+                                            $match : {
+                                                $expr : {
+                                                    $and : [
+                                                        {
+                                                            $in : [
+                                                                '$clientId',
+                                                                '$$currPermittedClients',
+                                                            ],
+                                                        },
+                                                        (teams && teams.length > 0 ?
+                                                            {
+                                                                $in : [
+                                                                    '$teamId',
+                                                                    teams,
+                                                                ],
+                                                            }
+                                                            :
+                                                            true
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ],
+                                    as : 'clients',
+                                },
+                            },
+                        ],
+                        as : 'scopes',
+                    },
+                },
+                {
+                    $addFields : {
+                        usage : {
+                            $reduce : {
+                                input : '$scopes',
+                                initialValue : 0.0,
+                                in : {
+                                    $add : [
+                                        '$$value',
+                                        {
+                                            $size : '$$this.clients',
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: {
+                        usage: orderDirection,
+                    },
+                },
+                {
+                    $skip: skip,
+                },
+                {
+                    $limit: limit,
+                },
+            ];
+
+            sortAggregationIndexInsert = 0;
+            break;
+
+        case SortOptions.NAME:
+        case SortOptions.DATE:
+        default:
+            sortAggregationStages = [
+                {
+                    $sort: (sort === SortOptions.DATE ? { _id: orderDirection } : { name: orderDirection }),
+                },
+                {
+                    $skip: skip,
+                },
+                {
+                    $limit: limit,
+                },
+            ];
+
+            sortAggregationIndexInsert = 0;
+            break;
+        }
+
+        // Insert the sort stages to the aggregation pipeline
+        aggregation.splice(sortAggregationIndexInsert, 0, ...sortAggregationStages);
+
+        return ClientModel.aggregate(aggregation);
     }
 
     /**
@@ -122,7 +274,7 @@ export class ClientRepository {
      */
     public static searchByName(clientName: string,
                                selectFields: string = 'name description clientId',
-                               population: { path: string, select: string } =  ClientRepository.defaultPopulation) {
+                               population: { path: string, select: string } = ClientRepository.defaultPopulation) {
         return (ClientModel as any).fuzzySearch(clientName).select(selectFields).populate(population);
     }
 
@@ -149,15 +301,15 @@ export class ClientRepository {
      * @param client - The new client that needs to be replaced with the old one.
      */
     public static update(clientId: string, client: Partial<IClient>): DocumentQuery<IClient | null, IClient> {
-  //      const updateHostUris = client.hostUris;
-  //      const newClient = client;
-  //      delete newClient['hostUris'];
-/*
-        return ClientModel.findOneAndUpdate(
-            { clientId },
-            { ...newClient, $addToSet: { hostUris: updateHostUris } },
-            { new: true, runValidators: true },
-        );*/
+        //      const updateHostUris = client.hostUris;
+        //      const newClient = client;
+        //      delete newClient['hostUris'];
+        /*
+                return ClientModel.findOneAndUpdate(
+                    { clientId },
+                    { ...newClient, $addToSet: { hostUris: updateHostUris } },
+                    { new: true, runValidators: true },
+                );*/
 
         return ClientModel.findOneAndUpdate({ clientId }, client, { new: true, runValidators: true });
     }

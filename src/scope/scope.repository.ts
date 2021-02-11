@@ -3,7 +3,16 @@
 import ScopeModel from './scope.model';
 import { IScope } from './scope.interface';
 
+enum SortOptions {
+    POPULARITY = 'popularity',
+    NAME = 'name',
+    DATE = 'date',
+    USAGE = 'usage',
+}
+
 export class ScopeRepository {
+
+    public static readonly SortOptions = SortOptions;
 
     private static readonly defaultPopulation = { path: 'client', select: 'clientId name description', populate: { path: 'teamId',  select: 'teamname' } };
     private static readonly defaultPopulationExtended = { path: 'permittedClientsDetails', select: 'clientId name description', populate: { path: 'teamId', select: 'teamname' } };
@@ -21,19 +30,15 @@ export class ScopeRepository {
      * Get all permitted scopes for a given client.
      * @param clientId - ID of a specific client.
      */
-    public static async findPermittedScopes(clientId: string, sort: string, desc: boolean) {
-        
-        // Ensure the sort field is exists.
-        const sortFields = ['name', 'audienceId', 'description'];
-        const sortField = sortFields.indexOf(sort) !== -1 ? sort: sortFields[0];
+    public static async findPermittedScopes(clientId: string, sort: SortOptions, desc: boolean) {
 
-        return await ScopeModel.aggregate([
-            { 
+        const aggregation: any = [
+            {
                 $match: {
                     permittedClients: clientId,
                 },
-            }, 
-            { 
+            },
+            {
                 $group: {
                     _id: '$audienceId',
                     scopes: {
@@ -41,43 +46,50 @@ export class ScopeRepository {
                             value: '$value',
                             type: '$type',
                             description: '$description',
+                            permittedClients: '$permittedClients',
                         },
                     },
                 },
-            }, 
-            { 
+            },
+            {
                 $lookup: {
                     from: 'clients',
                     localField: '_id',
                     foreignField: 'audienceId',
                     as: 'client',
                 },
-            }, 
-            { 
+            },
+            {
                 $unwind: {
                     path: '$client',
                 },
-            }, 
-            { 
+            },
+            {
                 $lookup: {
                     from: 'teams',
                     localField: 'client.teamId',
-                    foreignField: '_id', 
+                    foreignField: '_id',
                     as: 'team',
                 },
-            }, 
-            { 
+            },
+            {
                 $unwind: {
                     path: '$team',
                 },
-            }, 
-            { 
+            },
+            {
                 $project: {
                     _id: 0.0,
                     name: '$client.name',
                     description: '$client.name',
                     audienceId: '$_id',
-                    scopes: '$scopes',
+                    scopes: {
+                        value: 1.0,
+                        description: 1.0,
+                        type: 1.0,
+                    },
+                    popularity: 1.0,
+                    usage: 1.0,
                     team: {
                         teamname : 1.0,
                         desc: 1.0,
@@ -85,12 +97,110 @@ export class ScopeRepository {
                     },
                 },
             },
-            {
-                $sort: {
-                    [sortField]: desc ? -1 : 1,
+        ];
+
+        const orderDirection = desc ? -1 : 1;
+        let sortAggregationIndexInsert = 0;
+        let sortAggregationStages: any = [];
+
+        switch (sort) {
+
+        case SortOptions.POPULARITY:
+            sortAggregationStages = [
+                {
+                    $addFields: {
+                        popularity: {
+                            $reduce: {
+                                input: '$scopes',
+                                initialValue: 0,
+                                in: { $add: ['$$value', { $size: '$$this.permittedClients' }] },
+                            },
+                        },
+                    },
                 },
-            },
-        ]);
+                {
+                    $sort: {
+                        popularity: orderDirection,
+                    },
+                },
+                // {
+                //     $skip: skip,
+                // },
+                // {
+                //     $limit: limit,
+                // },
+            ];
+
+            sortAggregationIndexInsert = aggregation.length - 2;
+            break;
+
+        case SortOptions.USAGE:
+
+            // Must remove first lookup because this lookup (that one below) operates faster.
+            aggregation.splice(0, 1);
+
+            sortAggregationStages = [
+                {
+                    $addFields: {
+                        usage: {
+                            $reduce: {
+                                input: '$scopes',
+                                initialValue: 0,
+                                in: {
+                                    $add: [
+                                        '$$value',
+                                        {
+                                            $cond: {
+                                                if: { $in: [clientId, '$$this.permittedClients'] },
+                                                then: 1,
+                                                else: 0,
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: {
+                        usage: orderDirection,
+                    },
+                },
+                // {
+                //     $skip: skip,
+                // },
+                // {
+                //     $limit: limit,
+                // },
+            ];
+
+            sortAggregationIndexInsert = aggregation.length - 2;
+            break;
+
+        case SortOptions.NAME:
+        case SortOptions.DATE:
+        default:
+            sortAggregationStages = [
+                {
+                    $sort: (sort === SortOptions.DATE ? { 'client._id': orderDirection } : { 'client.name': orderDirection }),
+                },
+                // {
+                //     $skip: skip,
+                // },
+                // {
+                //     $limit: limit,
+                // },
+            ];
+
+            sortAggregationIndexInsert = aggregation.length - 1;
+            break;
+        }
+
+        // Insert the sort stages to the aggregation pipeline
+        aggregation.splice(sortAggregationIndexInsert, 0, ...sortAggregationStages);
+
+        return await ScopeModel.aggregate(aggregation);
     }
 
     /**
@@ -111,7 +221,6 @@ export class ScopeRepository {
         return await ScopeModel.findOne({ _id: scopeId }).populate(population).populate(ScopeRepository.defaultPopulationExtended);
     }
 
-    
     /**
      * @deprecated
      * Find scopes by client name of the scope owner.
@@ -160,7 +269,7 @@ export class ScopeRepository {
                     audienceId: 1,
                     client: {
                         name: 1,
-                        clientId: 1,                        
+                        clientId: 1,
                         teamId: {
                             teamname: 1,
                         },
@@ -245,7 +354,6 @@ export class ScopeRepository {
             .populate(population)
             .populate(ScopeRepository.defaultPopulationExtended);
     }
-
 
     /**
      * Delete scope by a scope ObjectID.
