@@ -117,6 +117,121 @@ export class ClientController {
     }
 
     /**
+     * Get all clients with sorting and pagination.
+     * @param req - Request
+     * @param res - Response
+     */
+    public static async getAllClients(req: Request, res: Response) {
+        const sort = req.query.sort || ClientRepository.SortOptions.NAME;
+        const desc = parseInt(req.query.desc, 10) === 1 ? true : false;
+        let limit = parseInt(req.query.limit, 10);
+        let skip = parseInt(req.query.skip, 10);
+        let teams = [];
+
+        // Validate limit value
+        if (isNaN(limit) || limit > 50 || limit <= 0) {
+            limit = 50;
+        }
+
+        // Validate skip value
+        if (isNaN(skip) || skip < 0) {
+            skip = 0;
+        }
+
+        // If the usage sort option is passed, need to pass the teams of the user to the search
+        if (req.person && sort === ClientRepository.SortOptions.USAGE) {
+            teams = (await TeamRepository.findByUserId(req.person.genesisId)).map(team => team._id);
+        }
+
+        const clients = await ClientRepository.find(limit, skip, sort, desc, teams);
+
+        return res.status(200).send(clients);
+    }
+
+    /**
+     * Get client's active tokens count list.
+     * @param req - Request
+     * @param res - Response
+     */
+    public static async getClientActiveTokens(req: Request, res: Response) {
+
+        // Gets the client's id to read
+        const clientId = req.params.clientId;
+
+        if (clientId) {
+
+            // Getting the client registration token associated to the client
+            const clientDoc = await ClientRepository.findById(clientId);
+
+            // Checks if the client is unexist or client not associated to the team
+            // (we do that to avoid exposing our db to user who performs information gathering attacks)
+            if (!clientDoc) {
+                log(
+                    LOG_LEVEL.INFO,
+                    parseLogData(
+                        ClientController.CLIENT_MESSAGES.INVALID_PARAMETER,
+                        'ClientController',
+                        '400',
+                        ClientController.CLIENT_MESSAGES.NO_STACK,
+                    ),
+                );
+
+                throw new InvalidParameter(ClientController.CLIENT_MESSAGES.INVALID_PARAMETER);
+            }
+
+            // Get client's active tokens count list from the authorization server
+            const activeTokenList = await OAuth2Controller.getClientActiveTokens(clientId, clientDoc.token);
+
+            return res.status(200).send(activeTokenList);
+        }
+
+        log(
+            LOG_LEVEL.INFO,
+            parseLogData(
+                this.CLIENT_MESSAGES.INVALID_PARAMETER,
+                'ClientController',
+                '400',
+                ClientController.CLIENT_MESSAGES.NO_STACK,
+            ),
+        );
+
+        throw new InvalidParameter(this.CLIENT_MESSAGES.INVALID_PARAMETER);
+    }
+
+    /**
+     * Get all permitted scopes available to a given client.
+     * @param req - Request
+     * @param res - Response
+     */
+    public static async getClientPermittedScopes(req: Request, res: Response) {
+
+        // Gets the client's id
+        const clientId = req.params.clientId;
+        const sort = req.query.sort || ScopeRepository.SortOptions;
+        const desc = parseInt(req.query.desc, 10) === 1 ? true : false;
+
+        if (clientId) {
+
+            // Get client's permitted scopes list (The list is list of clients, which contains scopes array)
+            const clientsPermittedScopes = await ScopeRepository.findPermittedScopes(clientId, sort, desc);
+
+            return res.status(200).send(clientsPermittedScopes);
+        }
+
+        log(
+            LOG_LEVEL.INFO,
+            parseLogData(
+                this.CLIENT_MESSAGES.INVALID_PARAMETER,
+                'ClientController',
+                '400',
+                ClientController.CLIENT_MESSAGES.NO_STACK,
+            ),
+        );
+
+        throw new InvalidParameter(this.CLIENT_MESSAGES.INVALID_PARAMETER);
+    }
+
+    /**
      * Find all clients of a specified team id.
      * @param req - Request
      * @param res - Response
@@ -325,12 +440,16 @@ export class ClientController {
 
             // If client undeletable
             if (!isDeletable) {
-                log(LOG_LEVEL.INFO, parseLogData(ClientController.CLIENT_MESSAGES.CLIENT_UNDELETABLE,
-                    'ClientController',
-                    '400',
-                    ClientController.CLIENT_MESSAGES.NO_STACK));
+                log(
+                    LOG_LEVEL.INFO,
+                    parseLogData(
+                        ClientController.CLIENT_MESSAGES.CLIENT_UNDELETABLE,
+                        'ClientController',
+                        '400',
+                        ClientController.CLIENT_MESSAGES.NO_STACK,
+                    ),
+                );
 
-                
                 throw new BadRequest(ClientController.CLIENT_MESSAGES.CLIENT_UNDELETABLE);
             }
 

@@ -28,7 +28,7 @@ const ClientSchema = new Schema({
         validate: [ClientValidator.isAudienceIdValid, 'Audience ID isn\'t valid'],
     },
     teamId: {
-        type: String,
+        type: Schema.Types.ObjectId,
         ref: 'Team',
         required: true,
         validate: {
