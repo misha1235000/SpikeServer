@@ -17,6 +17,7 @@ export class ClientRepository {
     public static readonly SortOptions = SortOptions;
 
     private static readonly defaultPopulation = { path: 'teamId', select: 'teamname' };
+    private static readonly defaultSearchSelection = 'name description clientId';
 
     /**
      * Finds clients by pagination parameters.
@@ -279,8 +280,10 @@ export class ClientRepository {
      * @param population - Population field in object, which indicates which field to populate (Like in mongoose queries)
      */
     public static searchByName(clientName: string,
-                               selectFields: string = 'name description clientId',
-                               population: { path: string, select: string } = ClientRepository.defaultPopulation) {
+                               selectFields: string = ClientRepository.defaultSearchSelection,
+                               population: { path: string, select: string } | { path?: string, select?: string }[] = ClientRepository.defaultPopulation) {
+        console.log('select fields: ', selectFields);
+        console.log('population fields: ', population);
         return (ClientModel as any).fuzzySearch(clientName).select(selectFields).populate(population);
     }
 
