@@ -52,7 +52,7 @@ const ClientSchema = new Schema({
 });
 
 ClientSchema.methods.toJSON = function () {
-    const obj = this.toObject();
+    const obj = this.toObject({ virtuals: true });
     delete obj._id;
     delete obj.__v;
     delete obj.token;
@@ -60,5 +60,11 @@ ClientSchema.methods.toJSON = function () {
 };
 
 ClientSchema.plugin(fuzzySearching, { fields: ['name'] });
+
+ClientSchema.virtual('scopes', {
+    ref: 'Scope',
+    localField: 'audienceId',
+    foreignField: 'audienceId',
+});
 
 export const ClientModel = model<IClient>('Client', ClientSchema);

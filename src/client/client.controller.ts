@@ -297,11 +297,36 @@ export class ClientController {
      * @param res - Response
      */
     public static async searchByName(req: Request, res: Response) {
+        const view = req.query.view === 'true';
+
         // Check if name is given
         if (req.query.name) {
 
-            // Find all clients with fuzzy search
-            const clients = await ClientRepository.searchByName(req.query.name);
+            let clients = [];
+
+            // If the search was made from the dashboard
+            if (view) {
+
+                const population = [
+                    { path: 'teamId', select: 'teamname desc ownerId' },
+                    { path: 'scopes', select: 'value type description permittedClients -audienceId' },
+                ];
+                const selection = 'name description clientId audienceId';
+
+                clients = (await ClientRepository.searchByName(req.query.name, selection, population)).map((client: any) => {
+                    const clientObj = client.toJSON();
+                    if (clientObj.teamId) {
+                        clientObj.team = { ...clientObj.teamId };
+                        delete clientObj.teamId;
+                    }
+
+                    return clientObj;
+                });
+            } else {
+
+                // Find all clients with fuzzy search
+                clients = await ClientRepository.searchByName(req.query.name);
+            }
 
             // If there's clients
             if (clients) {
