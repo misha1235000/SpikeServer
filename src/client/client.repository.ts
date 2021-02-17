@@ -282,8 +282,6 @@ export class ClientRepository {
     public static searchByName(clientName: string,
                                selectFields: string = ClientRepository.defaultSearchSelection,
                                population: { path: string, select: string } | { path?: string, select?: string }[] = ClientRepository.defaultPopulation) {
-        console.log('select fields: ', selectFields);
-        console.log('population fields: ', population);
         return (ClientModel as any).fuzzySearch(clientName).select(selectFields).populate(population);
     }
 
