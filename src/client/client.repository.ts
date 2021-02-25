@@ -37,10 +37,58 @@ export class ClientRepository {
             },
             {
                 $lookup: {
-                    from: 'scopes',
-                    localField: 'audienceId',
-                    foreignField: 'audienceId',
-                    as: 'scopes',
+                    from : 'scopes',
+                    let : {
+                        audience : '$audienceId',
+                    },
+                    pipeline : [
+                        {
+                            $match : {
+                                $expr : {
+                                    $eq : [
+                                        '$audienceId',
+                                        '$$audience',
+                                    ],
+                                },
+                            },
+                        },
+                        {
+                            $lookup : {
+                                from : 'clients',
+                                let : {
+                                    currPermittedClients : '$permittedClients',
+                                },
+                                pipeline : [
+                                    {
+                                        $match : {
+                                            $expr : {
+                                                $and : [
+                                                    {
+                                                        $in : [
+                                                            '$clientId',
+                                                            '$$currPermittedClients',
+                                                        ],
+                                                    },
+                                                    (teams && teams.length > 0 ?
+                                                        {
+                                                            $in : [
+                                                                '$teamId',
+                                                                teams,
+                                                            ],
+                                                        }
+                                                        :
+                                                        true
+                                                    ),
+                                                ],
+                                            },
+                                        },
+                                    },
+                                ],
+                                as : 'clients',
+                            },
+                        },
+                    ],
+                    as : 'scopes',
                 },
             },
             {
@@ -63,10 +111,25 @@ export class ClientRepository {
                     description: 1.0,
                     audienceId: 1.0,
                     scopes: {
-                        permittedClients: 1.0,
-                        description: 1.0,
-                        value: 1.0,
-                        type: 1.0,
+                        $map: {
+                            input: '$scopes',
+                            as: 'scope',
+                            in: {
+                                value: '$$scope.value',
+                                description: '$$scope.description',
+                                type: '$$scope.type',
+                                permittedClients: {
+                                    $map: {
+                                        input: '$$scope.clients',
+                                        as: 'client',
+                                        in: {
+                                            clientId: '$$client.clientId',
+                                            name: '$$client.name'
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     popularity: 1,
                     usage: 1,
@@ -116,66 +179,7 @@ export class ClientRepository {
 
         case SortOptions.USAGE:
 
-            // Must remove first lookup because this lookup (that one below) operates faster.
-            aggregation.splice(1, 1);
-
             sortAggregationStages = [
-                {
-                    $lookup: {
-                        from : 'scopes',
-                        let : {
-                            audience : '$audienceId',
-                        },
-                        pipeline : [
-                            {
-                                $match : {
-                                    $expr : {
-                                        $eq : [
-                                            '$audienceId',
-                                            '$$audience',
-                                        ],
-                                    },
-                                },
-                            },
-                            {
-                                $lookup : {
-                                    from : 'clients',
-                                    let : {
-                                        currPermittedClients : '$permittedClients',
-                                    },
-                                    pipeline : [
-                                        {
-                                            $match : {
-                                                $expr : {
-                                                    $and : [
-                                                        {
-                                                            $in : [
-                                                                '$clientId',
-                                                                '$$currPermittedClients',
-                                                            ],
-                                                        },
-                                                        (teams && teams.length > 0 ?
-                                                            {
-                                                                $in : [
-                                                                    '$teamId',
-                                                                    teams,
-                                                                ],
-                                                            }
-                                                            :
-                                                            true
-                                                        ),
-                                                    ],
-                                                },
-                                            },
-                                        },
-                                    ],
-                                    as : 'clients',
-                                },
-                            },
-                        ],
-                        as : 'scopes',
-                    },
-                },
                 {
                     $addFields : {
                         usage : {
@@ -207,7 +211,7 @@ export class ClientRepository {
                 },
             ];
 
-            sortAggregationIndexInsert = 1;
+            sortAggregationIndexInsert = 2;
             break;
 
         case SortOptions.NAME:
