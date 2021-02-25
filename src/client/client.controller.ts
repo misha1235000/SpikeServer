@@ -138,8 +138,8 @@ export class ClientController {
             skip = 0;
         }
 
-        // If the usage sort option is passed, need to pass the teams of the user to the search
-        if (req.person && sort === ClientRepository.SortOptions.USAGE) {
+        // Need to pass the teams of the user to filter only the permitted clients of the user teams.
+        if (req.person) {
             teams = (await TeamRepository.findByUserId(req.person.genesisId)).map(team => team._id);
         }
 

@@ -8,6 +8,22 @@ import { LOG_LEVEL, log, parseLogData } from '../utils/logger';
 import { NotFound, InvalidParameter } from '../utils/error';
 
 export class PersonController {
+
+    /**
+     * Gets person by id from kartoffel API
+     * @param req - Request
+     * @param res - Response
+     */
+    public static async getPersonById(req: Request, res: Response) {
+        const person = 
+            await axios.default.get(
+                `${process.env.KARTOFFEL_URL}/api/persons/${req.params.id}`,
+                { headers: { authorization: await getToken() } },
+            );
+
+        res.send(person);
+    }
+
     /**
      * Gets persons from kartoffel API
      * @param req - Request
