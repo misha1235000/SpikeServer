@@ -21,7 +21,7 @@ export class PersonController {
                 { headers: { authorization: await getToken() } },
             );
 
-        res.send(person);
+        res.send(person.data);
     }
 
     /**
