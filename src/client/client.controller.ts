@@ -307,21 +307,30 @@ export class ClientController {
             // If the search was made from the dashboard
             if (view) {
 
-                const population = [
-                    { path: 'teamId', select: 'teamname desc ownerId' },
-                    { path: 'scopes', select: 'value type description permittedClients -audienceId' },
-                ];
-                const selection = 'name description clientId audienceId';
+                // const population = [
+                //     { path: 'teamId', select: 'teamname desc ownerId' },
+                //     { path: 'scopes', select: 'value type description permittedClients -audienceId' },
+                // ];
+                // const selection = 'name description clientId audienceId';
 
-                clients = (await ClientRepository.searchByName(req.query.name, selection, population)).map((client: any) => {
-                    const clientObj = client.toJSON();
-                    if (clientObj.teamId) {
-                        clientObj.team = { ...clientObj.teamId };
-                        delete clientObj.teamId;
-                    }
+                // clients = (await ClientRepository.searchByName(req.query.name, selection, population)).map((client: any) => {
+                //     const clientObj = client.toJSON();
+                //     if (clientObj.teamId) {
+                //         clientObj.team = { ...clientObj.teamId };
+                //         delete clientObj.teamId;
+                //     }
 
-                    return clientObj;
-                });
+                //     return clientObj;
+                // });
+                let teams = [];
+
+                // Need to pass the teams of the user to filter only the permitted clients of the user teams.
+                if (req.person) {
+                    teams = (await TeamRepository.findByUserId(req.person.genesisId)).map(team => team._id);
+                }
+
+                clients = await ClientRepository.searchByNameWithAggregation(req.query.name, teams);
+                
             } else {
 
                 // Find all clients with fuzzy search
