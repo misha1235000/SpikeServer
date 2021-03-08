@@ -97,6 +97,7 @@ export class OAuth2Parser {
         return {
             ...(clientInformation.id ? { clientId: clientInformation.id } : {}),
             ...(clientInformation.name ? { name: clientInformation.name } : {}),
+            ...(clientInformation.description ? { description: clientInformation.description } : {}),
             ...(clientInformation.hostUris ? { hostUris: clientInformation.hostUris } : {}),
             ...(clientInformation.registrationToken ? { token: clientInformation.registrationToken } : {}),
         };

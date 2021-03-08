@@ -5,6 +5,8 @@ import { IClient } from './client.interface';
 import { DocumentQuery, Types } from 'mongoose';
 import { DuplicateUnique } from '../utils/error';
 
+const { nGrams, config: { DEFAULT_MIN_SIZE } } = require('mongoose-fuzzy-searching/helpers');
+
 enum SortOptions {
     POPULARITY = 'popularity',
     NAME = 'name',
@@ -287,6 +289,156 @@ export class ClientRepository {
                                selectFields: string = ClientRepository.defaultSearchSelection,
                                population: { path: string, select: string } | { path?: string, select?: string }[] = ClientRepository.defaultPopulation) {
         return (ClientModel as any).fuzzySearch(clientName).select(selectFields).populate(population);
+    }
+
+    /**
+     * Fuzzy searching clients by name with aggregation 
+     * (used basically for viewing more information about clients)
+     * @param clientName - Client name to search
+     * @param teams - Array of teams to search by usage of clients of the teams in other clients (By the scopes's permitted clients)
+     */
+    public static searchByNameWithAggregation(clientName: string, teams: any = []) {
+        const aggregation = [
+            { 
+                $match: { 
+                    $text: { 
+                        $search: nGrams(clientName, false, DEFAULT_MIN_SIZE, false).join(' '),
+                    },
+                },
+            },
+            {
+                $sort: {
+                    _id: -1,
+                },
+            },
+            {
+                $addFields : {
+                    confidenceScore: { $meta: 'textScore' },
+                },
+            },
+            {
+                $lookup: {
+                    from : 'scopes',
+                    let : {
+                        audience : '$audienceId',
+                    },
+                    pipeline : [
+                        {
+                            $match : {
+                                $expr : {
+                                    $eq : [
+                                        '$audienceId',
+                                        '$$audience',
+                                    ],
+                                },
+                            },
+                        },
+                        {
+                            $lookup : {
+                                from : 'clients',
+                                let : {
+                                    currPermittedClients : '$permittedClients',
+                                },
+                                pipeline : [
+                                    {
+                                        $match : {
+                                            $expr : {
+                                                $and : [
+                                                    {
+                                                        $in : [
+                                                            '$clientId',
+                                                            '$$currPermittedClients',
+                                                        ],
+                                                    },
+                                                    (teams && teams.length > 0 ?
+                                                        {
+                                                            $in : [
+                                                                '$teamId',
+                                                                teams,
+                                                            ],
+                                                        }
+                                                        :
+                                                        true
+                                                    ),
+                                                ],
+                                            },
+                                        },
+                                    },
+                                ],
+                                as : 'clients',
+                            },
+                        },
+                    ],
+                    as : 'scopes',
+                },
+            },
+            {
+                $lookup: {
+                    from: 'teams',
+                    localField: 'teamId',
+                    foreignField: '_id',
+                    as: 'team',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$team',
+                },
+            },
+            {
+                $sort: { confidenceScore: { $meta: 'textScore' } },
+            },
+            {
+                $project: {
+                    _id: 0.0,
+                    name: 1.0,
+                    description: 1.0,
+                    audienceId: 1.0,
+                    scopes: {
+                        $map: {
+                            input: '$scopes',
+                            as: 'scope',
+                            in: {
+                                value: '$$scope.value',
+                                description: '$$scope.description',
+                                type: '$$scope.type',
+                                permittedClients: {
+                                    $map: {
+                                        input: '$$scope.clients',
+                                        as: 'client',
+                                        in: {
+                                            clientId: '$$client.clientId',
+                                            name: '$$client.name'
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    confidenceScore: 1,
+                    team: {
+                        teamname: 1.0,
+                        desc: 1.0,
+                        ownerId: 1.0,
+                    },
+                },
+            },
+        ];
+
+        // const matchQuery = 
+        //     [
+        //         { $match: { $text: { $search: nGrams(name, false, DEFAULT_MIN_SIZE, false).join(' ') } } },
+        //         {
+        //             $addFields : {
+        //                 confidenceScore: { $meta: 'textScore' },
+        //             },
+        //         },
+        //         {
+        //             sort: { confidenceScore: { $meta: 'textScore' } },
+        //         },
+        //     ];
+
+        return ClientModel.aggregate(aggregation);
     }
 
     /**
