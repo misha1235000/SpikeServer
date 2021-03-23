@@ -354,7 +354,12 @@ export class ScopeRepository {
 
         return await ScopeModel.findOneAndUpdate(
             { audienceId, value: scopeName },
-            { $set: { permittedClients: updateScope.permittedClients } },
+            {
+                $set: { 
+                    permittedClients: updateScope.permittedClients,
+                    ...(updateScope.description ? { description: updateScope.description }: {}),
+                },
+            },
             { new: true, runValidators: true })
             .populate(population)
             .populate(ScopeRepository.defaultPopulationExtended);
