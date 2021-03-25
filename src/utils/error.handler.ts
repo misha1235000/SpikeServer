@@ -3,9 +3,19 @@
 import { Request, Response, NextFunction } from 'express';
 import { BaseError } from './error';
 import { MongoError } from 'mongodb';
+import { log, LOG_LEVEL, parseLogData } from './logger';
 
 // TODO: Change error type from any
 export function errorHandler(error: any, req: Request, res: Response, next: NextFunction) {
+    log(
+        LOG_LEVEL.ERROR,
+        parseLogData(
+            error.name || 'Internal Unknown Error',
+            `Received From: ${req.headers['x-forwarded-for']}, message: ${error.message || error}`,
+            error.status || 500,
+            error.stack,
+        ),
+    )
 
     console.log(error);
 
