@@ -1,5 +1,9 @@
 import * as winston from 'winston';
 import * as winstonRotateFile from 'winston-daily-rotate-file';
+import { ElasticsearchTransport } from 'winston-elasticsearch';
+import { Client } from '@elastic/elasticsearch';
+
+const client = new Client({ node: process.env.ELASTICSEARCH_URL || 'http://localhost:9200' });
 
 // log levels
 export enum LOG_LEVEL {
@@ -11,8 +15,19 @@ export enum LOG_LEVEL {
     SILLY = 'silly',
 }
 
+const esTransportOpts = {
+    level: 'info',
+    index: 'spike-server',
+    client: client
+};
+
+const esTransport = new ElasticsearchTransport(esTransportOpts);
+
 const logger = winston.createLogger({
-    defaultMeta: { service: 'SpikeServer', hostname: 'HOSTNAME' },
+    defaultMeta: { service: 'SpikeServer' },
+    transports: [
+        esTransport
+    ]
 });
 
 const format = winston.format.combine(
@@ -39,5 +54,5 @@ export const parseLogData = (message: string,
                              name:    string,
                              code:    string,
                              stack:   string) => {
-    return { message, name, code, stack, service: 'SpikeServer', hostname: 'HOSTNAME' };
+    return { message, name, code, stack, service: 'SpikeServer' };
 };

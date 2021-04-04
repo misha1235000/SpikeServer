@@ -21,7 +21,17 @@ export class PersonController {
                 { headers: { authorization: await getToken() } },
             );
 
-        res.send(person.data);
+        let chatUrl = process.env.HI_CHAT_URL;
+        if (
+            person.data &&
+            person.data.domainUsers &&
+            person.data.domainUsers.length > 0 &&
+            person.data.domainUsers[0].adfsUID
+        ) {
+            chatUrl += person.data.domainUsers[0].adfsUID;
+        }
+
+        res.send({ ...person.data, chatUrl });
     }
 
     /**
