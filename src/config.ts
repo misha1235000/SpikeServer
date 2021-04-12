@@ -5,8 +5,8 @@ dotenv.config();
 
 export const config = {
     // Database URLs
-    prodDatabaseUrl: `mongodb${process.env.DB_SRV}://${process.env.DB_PROD_USER}:${process.env.DB_PROD_PASS}@${process.env.DB_PROD_HOST}/${process.env.DB_PROD_NAME}${process.env.DB_PROD_TYPE || ''}`,
-    testDatabaseUrl: `mongodb${process.env.DB_SRV}://${process.env.DB_TEST_USER}:${process.env.DB_TEST_PASS}@${process.env.DB_TEST_HOST}/${process.env.DB_TEST_NAME}${process.env.DB_TEST_TYPE || ''}`,
+    prodDatabaseUrl: `mongodb${process.env.DB_SRV || ''}://${process.env.DB_PROD_USER}:${process.env.DB_PROD_PASS}@${process.env.DB_PROD_HOST}/${process.env.DB_PROD_NAME}${process.env.DB_PROD_TYPE || ''}`,
+    testDatabaseUrl: `mongodb${process.env.DB_SRV || ''}://${process.env.DB_TEST_USER}:${process.env.DB_TEST_PASS}@${process.env.DB_TEST_HOST}/${process.env.DB_TEST_NAME}${process.env.DB_TEST_TYPE || ''}`,
 
     // Client Credentials flow configuration for OAuth2
     clientCredentials: {

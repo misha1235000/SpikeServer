@@ -82,6 +82,7 @@
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^3.10.0",
     "winston-elasticsearch": "^0.15.3",
-    "winston-logstash": "^0.4.0"
+    "winston-logstash": "^0.4.0",
+    "winston-logstash-transport": "^2.0.0"
   }
 }
