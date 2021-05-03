@@ -38,6 +38,7 @@ logstashActive === 'true' ? transports.push(logstashTransport) : null;
 const logger = winston.createLogger({
     defaultMeta: { service: 'SpikeServer' },
     transports,
+    exitOnError: false,
 });
 
 const format = winston.format.combine(
