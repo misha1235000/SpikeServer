@@ -19,13 +19,21 @@ export class TeamValidator {
         throw new InvalidTeamname('Teamname Invalid. 4 - 20 characters, contains letters or numbers');
     }
 
-    static isTeamIdsValid(teamIds: string[]): boolean {
-        for (const teamId of teamIds) {
-            if (!ObjectId.isValid(teamId)) {
-                throw new InvalidTeamInformation('Teamname Invalid. 4 - 20 characters, contains letters or numbers');
+    static isUserIdsValid(userIds: string[]): boolean {
+        for (const userId of userIds) {
+            if (!ObjectId.isValid(userId)) {
+                throw new InvalidTeamInformation('The user IDs are invalid');
             }
         }
 
+        return true;
+    }
+
+    static isContactUserIdValid(contactUesrId: string): boolean {
+        if (!ObjectId.isValid(contactUesrId)) {
+            throw new InvalidTeamInformation('The contact user ID is invalid');
+        }
+        
         return true;
     }
 }

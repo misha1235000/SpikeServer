@@ -11,4 +11,5 @@ export interface ITeam extends Document {
     userIds: string[];
     adminIds: string[];
     ownerName: string;
+    contactUserId: string;
 }

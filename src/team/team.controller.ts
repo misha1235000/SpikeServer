@@ -109,7 +109,7 @@ export class TeamController {
 
             const teamDoc = await TeamRepository.findById(team._id);
 
-            if (!teamDoc || !(teamDoc.adminIds).includes(req.person.genesisId)) {
+            if (!teamDoc || !(teamDoc.adminIds).includes(req.person.genesisId)) { 
                 log(LOG_LEVEL.INFO, parseLogData(TeamController.TEAM_MESSAGES.UNAUTHORIZED,
                                                  'TeamController',
                                                  '401',

@@ -14,12 +14,12 @@ const TeamSchema = new Schema({
     userIds: {
         type: [String],
         required: false,
-        validate: [TeamValidator.isTeamIdsValid, ''],
+        validate: [TeamValidator.isUserIdsValid, ''],
     },
     adminIds: {
         type: [String],
         required: true,
-        validate: [TeamValidator.isTeamIdsValid, ''],
+        validate: [TeamValidator.isUserIdsValid, ''],
     },
     teamname: {
         type: String,
@@ -31,6 +31,11 @@ const TeamSchema = new Schema({
         type: String,
         required: false,
     },
+    contactUserId: {
+        type: String,
+        required: true,
+        validate: [TeamValidator.isContactUserIdValid, '']
+    }
 });
 
 // Virtual field for getting all the clients of specific team
