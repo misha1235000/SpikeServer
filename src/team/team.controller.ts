@@ -37,17 +37,17 @@ export class TeamController {
             const createdTeam = await TeamRepository.create(team);
 
             log(LOG_LEVEL.INFO, parseLogData(TeamController.TEAM_MESSAGES.SUCCESSFULLY_CREATED,
-                                             'TeamController',
-                                             '200',
-                                             TeamController.TEAM_MESSAGES.NO_STACK));
+                'TeamController',
+                '200',
+                TeamController.TEAM_MESSAGES.NO_STACK));
 
             return res.json({ team: createdTeam });
         }
 
         log(LOG_LEVEL.INFO, parseLogData(TeamController.TEAM_MESSAGES.TEAM_PARAMETER_MISSING,
-                                         'TeamController',
-                                         '400',
-                                         TeamController.TEAM_MESSAGES.NO_STACK));
+            'TeamController',
+            '400',
+            TeamController.TEAM_MESSAGES.NO_STACK));
 
         throw new InvalidParameter(TeamController.TEAM_MESSAGES.TEAM_PARAMETER_MISSING);
     }
@@ -87,9 +87,9 @@ export class TeamController {
         }
 
         log(LOG_LEVEL.INFO, parseLogData(TeamController.TEAM_MESSAGES.TEAM_PARAMETER_MISSING,
-                                         'TeamController',
-                                         '400',
-                                         TeamController.TEAM_MESSAGES.NO_STACK));
+            'TeamController',
+            '400',
+            TeamController.TEAM_MESSAGES.NO_STACK));
 
         throw new InvalidParameter(TeamController.TEAM_MESSAGES.ID_PARAMETER_MISSING);
     }
@@ -109,24 +109,41 @@ export class TeamController {
 
             const teamDoc = await TeamRepository.findById(team._id);
 
-            if (!teamDoc || !(teamDoc.adminIds).includes(req.person.genesisId)) { 
+            if (!teamDoc || !(teamDoc.adminIds).includes(req.person.genesisId)) {
                 log(LOG_LEVEL.INFO, parseLogData(TeamController.TEAM_MESSAGES.UNAUTHORIZED,
-                                                 'TeamController',
-                                                 '401',
-                                                 TeamController.TEAM_MESSAGES.NO_STACK));
+                    'TeamController',
+                    '401',
+                    TeamController.TEAM_MESSAGES.NO_STACK));
 
                 throw new Unauthorized(TeamController.TEAM_MESSAGES.UNAUTHORIZED);
             }
 
+            if (team.contactUserId) {
+                if (typeof (team.contactUserId) === 'string' && team.contactUserId !== "") {
+                    console.log("in")
+                    if(teamDoc.userIds.includes(team.contactUserId) || teamDoc.adminIds.includes(team.contactUserId)){
+                        console.log("good")
+                        teamDoc.contactUserId = team.contactUserId;
+                    }
+                    else{
+                        res.send("this user is not in your team and cant be its contact user");
+                    }   
+                }
+                else{
+                    res.send("the contact user id is invalide or missing. check it")
+                }
+                res.send("contact user has changed.")
+            }
+            
             const updatedTeam = await TeamRepository.update(team._id, team);
 
             return res.json({ team: updatedTeam });
         }
 
         log(LOG_LEVEL.INFO, parseLogData(TeamController.TEAM_MESSAGES.ID_PARAMETER_MISSING,
-                                         'TeamController',
-                                         '400',
-                                         TeamController.TEAM_MESSAGES.NO_STACK));
+            'TeamController',
+            '400',
+            TeamController.TEAM_MESSAGES.NO_STACK));
 
         throw new InvalidParameter(TeamController.TEAM_MESSAGES.ID_PARAMETER_MISSING);
     }
@@ -144,9 +161,9 @@ export class TeamController {
 
             if (!deletedTeam) {
                 log(LOG_LEVEL.INFO, parseLogData(TeamController.TEAM_MESSAGES.TEAM_NOT_FOUND,
-                                                 'TeamController',
-                                                 '404',
-                                                 TeamController.TEAM_MESSAGES.NO_STACK));
+                    'TeamController',
+                    '404',
+                    TeamController.TEAM_MESSAGES.NO_STACK));
 
                 throw new NotFound(this.TEAM_MESSAGES.TEAM_NOT_FOUND);
             }
@@ -155,9 +172,9 @@ export class TeamController {
         }
 
         log(LOG_LEVEL.INFO, parseLogData(TeamController.TEAM_MESSAGES.ID_PARAMETER_MISSING,
-                                         'TeamController',
-                                         '400',
-                                         TeamController.TEAM_MESSAGES.NO_STACK));
+            'TeamController',
+            '400',
+            TeamController.TEAM_MESSAGES.NO_STACK));
 
         throw new InvalidParameter(TeamController.TEAM_MESSAGES.ID_PARAMETER_MISSING);
     }
