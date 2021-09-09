@@ -4,7 +4,8 @@ import { TeamModel } from './team.model';
 import { DuplicateUnique } from '../utils/error';
 import { ITeam } from './team.interface';
 
-export class TeamRepository {
+export class 
+TeamRepository {
     /**
      * Finds team by its id.
      * @param teamId - The team id.

@@ -139,6 +139,7 @@ export class ClientRepository {
                         teamname: 1.0,
                         desc: 1.0,
                         ownerId: 1.0,
+                        contactUserId: 1.0,
                     },
                 },
             },

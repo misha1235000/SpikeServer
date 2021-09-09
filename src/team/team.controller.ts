@@ -4,7 +4,7 @@ import { getToken } from '../get-token';
 import { Request, Response, NextFunction } from 'express';
 import * as axios from 'axios';
 import { LOG_LEVEL, log, parseLogData } from '../utils/logger';
-import { NotFound, InvalidParameter } from '../utils/error';
+import { NotFound, InvalidParameter, BadRequest } from '../utils/error';
 import { TeamRepository } from './team.repository';
 import { ITeam } from './team.interface';
 import { Unauthorized } from '../auth/auth.error';
@@ -18,6 +18,8 @@ export class TeamController {
         NO_STACK: 'No stack was found.',
         SUCCESSFULLY_CREATED: 'Team Successfully Created',
         UNAUTHORIZED: 'Person Not Authorized To Update Team',
+        TEAM_CONTACT_USER_ID_INCORRECT: 'Contact user id is missing or invalide',
+        USER_NOT_IN_TEAM: 'User is not in your team'
     };
 
     /**
@@ -33,6 +35,7 @@ export class TeamController {
 
             team.userIds = [];
             team.userIds.push(team.ownerId);
+            team.contactUserId = team.ownerId;
 
             const createdTeam = await TeamRepository.create(team);
 
@@ -119,20 +122,23 @@ export class TeamController {
             }
 
             if (team.contactUserId) {
-                if (typeof (team.contactUserId) === 'string' && team.contactUserId !== "") {
-                    console.log("in")
-                    if(teamDoc.userIds.includes(team.contactUserId) || teamDoc.adminIds.includes(team.contactUserId)){
-                        console.log("good")
-                        teamDoc.contactUserId = team.contactUserId;
-                    }
-                    else{
-                        res.send("this user is not in your team and cant be its contact user");
-                    }   
+                if (typeof (team.contactUserId) !== 'string' && team.contactUserId === "") {
+                    log(LOG_LEVEL.INFO, parseLogData(TeamController.TEAM_MESSAGES.TEAM_CONTACT_USER_ID_INCORRECT,
+                        'TeamController',
+                        '400',
+                        TeamController.TEAM_MESSAGES.NO_STACK));
+
+                    throw new BadRequest(TeamController.TEAM_MESSAGES.TEAM_CONTACT_USER_ID_INCORRECT);
                 }
-                else{
-                    res.send("the contact user id is invalide or missing. check it")
+
+                if (!teamDoc.userIds.includes(team.contactUserId) && !teamDoc.adminIds.includes(team.contactUserId)) {
+                    log(LOG_LEVEL.INFO, parseLogData(TeamController.TEAM_MESSAGES.USER_NOT_IN_TEAM,
+                        'TeamController',
+                        '400',
+                        TeamController.TEAM_MESSAGES.NO_STACK));
+
+                        throw new BadRequest(TeamController.TEAM_MESSAGES.USER_NOT_IN_TEAM);
                 }
-                res.send("contact user has changed.")
             }
             
             const updatedTeam = await TeamRepository.update(team._id, team);
@@ -179,3 +185,4 @@ export class TeamController {
         throw new InvalidParameter(TeamController.TEAM_MESSAGES.ID_PARAMETER_MISSING);
     }
 }
+

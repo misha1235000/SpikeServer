@@ -11,6 +11,7 @@ export const config = {
     // Client Credentials flow configuration for OAuth2
     clientCredentials: {
         client: {
+            
             id: process.env.CLIENT_ID,
             secret: process.env.CLIENT_SECRET,
         },
